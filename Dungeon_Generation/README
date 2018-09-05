@@ -3,16 +3,24 @@ Rougelike Dungeon Generation
   level. This dungeon will be utilized for displaying rooms, corridors, enemies,
   and items to the player (some of those things have yet to be implemented).
 
+  Within the dungeon, the meaning of currently diplayed characters is as follows:
+    ' ' - Denotes rock
+    '.' - Denotes room
+    '#' - Denotes corridor
+
 Implementation
   This implementation of the dungeon generation program meets all specifications.
   At least 5 rooms are randomly generated with x_size >= 3 and y_size >= 2 without
   touching or coming within one position of each other in any direction. The
   corridors are then attached to each room to allow for players to move in between
-  them.
+  them. The door location to the rooms is randomized. More randomization to the
+  paths will be added later.
 
   init_rooms on line 84 does the heavy lifting for creating and error checking the
-  rooms. Some of the settings have been generalized so altering the appearance of
-  the dungeons will be possible if desired.
+  rooms. render_corridors on line 230 takes care of creating paths between rooms.
+
+  Some of the settings have been generalized so altering the appearance of
+  the dungeons will be easy if desired in the future.
 
 Author
   Weston Berg (weberg@iastate.edu)

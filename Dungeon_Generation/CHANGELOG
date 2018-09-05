@@ -2,9 +2,15 @@
 	Program is completed up to corridor drawing
 
 09/05/2018 11:02 AM
-	Fixed accidental forward slash on line 68.
+	Fixed accidental forward slash on line 68
 	Extended dungeon array to fit the status bar
 	Changed init_dungeon function to init_dungeon_arr
 	Changed room placing logic to only account for dungeon height
+
+09/05/2018 12:20 AM
+	Created render_corridors function for carving corridors between rooms
+	Re-added -Werror flag to Makefile after finishing testing that required warnings to be allowed
+	Updated README with character meanings and and updated implementation section
+
 
 

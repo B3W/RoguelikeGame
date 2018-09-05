@@ -14,9 +14,9 @@
 
 
 // Graphics Rendering User Changeable Settings
-#define ROCK_CHAR '#'
-#define ROOM_CHAR ' '
-#define CORRIDOR_CHAR '.'
+#define ROCK_CHAR ' '
+#define ROOM_CHAR '.'
+#define CORRIDOR_CHAR '#'
 
 // Graphics Rendering Non-Changeable Settings
 #define DUNGEON_HEIGHT 21
@@ -67,6 +67,9 @@ int main(int argc, char *argv[]) {
   // Initialize all of the rooms
   init_rooms(num_rooms, rooms, dungeon);
 
+  // Tunnels corridors between rooms
+  render_corridors(num_rooms, rooms, dungeon);
+  
   
   // Display the dungeon
   show_dungeon(dungeon);
@@ -214,6 +217,67 @@ void init_room(struct room *room_inst, char x_pos, char y_pos, char x_size, char
     room_inst->y_size = y_size;
     room_inst->hardness = hardness;
     
+}
+
+
+/*
+ * Creates corridors between rooms
+ *
+ * @param
+ * @param
+ * @param
+ */
+void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH]) {
+
+  int i;
+
+  for (i = 0; i < room_count; i++) {
+
+    // Room to begin in
+    struct room origin = p_rooms[i];
+
+    // Room to end in
+    struct room destination;
+    if ((i + 1) >= room_count) { // Check if it is necessary to wrap around to the beginning
+      destination = p_rooms[0];
+      
+    }else { // No wrapping necessary
+      destination = p_rooms[i+1];
+      
+    }
+
+    // Randomize origin door location
+    unsigned char x0 = origin.x_pos + (rand() % origin.x_size);
+    unsigned char y0 = origin.y_pos + (rand() % origin.y_size);
+
+    // Randomize destination door location
+    unsigned char x1 = destination.x_pos + (rand() % destination.x_size);
+    unsigned char y1 = destination.y_pos + (rand() % destination.y_size);
+
+    // Calculate the incrementing
+    int x_increment = abs(x1 - x0)/(x1 - x0);
+    int y_increment = abs(y1 - y0)/(y1 - y0);
+
+    // Begin carving the corridor into the dungeon
+    int x, y;
+
+    for (x = x0; x != x1; x += x_increment) {
+
+      // If it is not a room draw a corridor symbol
+      if (dungeon[y0][x] != ROOM_CHAR) {
+	dungeon[y0][x] = CORRIDOR_CHAR;
+      }
+      
+    }
+    for (y = y0; y != y1; y += y_increment) {
+
+      // If it is not a room draw a corridor symbol
+      if (dungeon[y][x1] != ROOM_CHAR) {
+	dungeon[y][x1] = CORRIDOR_CHAR;
+      }
+      
+    }
+  }
 }
 
 
