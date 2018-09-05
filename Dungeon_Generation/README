@@ -1,0 +1,21 @@
+Rougelike Dungeon Generation
+  The purpose of this program is to procedurally generate a randomized dungeon
+  level. This dungeon will be utilized for displaying rooms, corridors, enemies,
+  and items to the player (some of those things have yet to be implemented).
+
+Implementation
+  This implementation of the dungeon generation program meets all specifications.
+  At least 5 rooms are randomly generated with x_size >= 3 and y_size >= 2 without
+  touching or coming within one position of each other in any direction. The
+  corridors are then attached to each room to allow for players to move in between
+  them.
+
+  init_rooms on line 84 does the heavy lifting for creating and error checking the
+  rooms. Some of the settings have been generalized so altering the appearance of
+  the dungeons will be possible if desired.
+
+Author
+  Weston Berg (weberg@iastate.edu)
+
+Date
+  September 5th, 2018

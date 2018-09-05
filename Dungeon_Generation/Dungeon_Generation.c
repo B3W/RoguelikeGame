@@ -18,7 +18,8 @@
 #define ROOM_CHAR ' '
 #define CORRIDOR_CHAR '.'
 
-// Graphics Rendering Immutable Settings
+// Graphics Rendering Non-Changeable Settings
+#define DUNGEON_HEIGHT 21
 #define MIN_ROOM_COUNT 5
 #define MAX_ROOM_COUNT 8
 #define MIN_ROOM_X_SIZE 3
@@ -46,11 +47,11 @@ struct room {
  */
 int main(int argc, char *argv[]) {
 
-  // 2D array for representing the entire dungeon
+  // 2D array for representing the entire dungeon with space for status updates
   char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH];
 
   // Initialize dungeon array
-  init_dungeon(dungeon);
+  init_dungeon_arr(dungeon);
 
   
   // Set seed for random numbers as the current time in milliseconds
@@ -64,7 +65,7 @@ int main(int argc, char *argv[]) {
   struct room rooms[num_rooms];
 
   // Initialize all of the rooms
- /init_rooms(num_rooms, rooms, dungeon);
+  init_rooms(num_rooms, rooms, dungeon);
 
   
   // Display the dungeon
@@ -92,7 +93,7 @@ void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL
     char rand_xpos = (rand() % (TERMINAL_WIDTH - 2)) + 1;
     
     // Randome ypos (in range 1 - 20)
-    char rand_ypos = (rand() % (TERMINAL_HEIGHT - 2)) + 1;
+    char rand_ypos = (rand() % (DUNGEON_HEIGHT - 2)) + 1;
 
     // Random x size
     char rand_xsize = (rand() % ROOM_SIZE_RANGE) + MIN_ROOM_X_SIZE;
@@ -105,7 +106,7 @@ void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL
     if ((rand_xpos + rand_xsize) > (TERMINAL_WIDTH - 1)) { // Check xpos out of bounds
       continue;
       
-    } else if ((rand_ypos + rand_ysize) > (TERMINAL_HEIGHT - 1)) { // Check ypos out of bounds
+    } else if ((rand_ypos + rand_ysize) > (DUNGEON_HEIGHT - 1)) { // Check ypos out of bounds
       continue;
       
     }
@@ -218,18 +219,44 @@ void init_room(struct room *room_inst, char x_pos, char y_pos, char x_size, char
 
 /*
  * Function for initializing the dungeon
- * Sets all locations to rock intially
+ * Sets all locations to rock intially and sets up status bar
  *
  * @param dungeon  2D array representing the dungeon
  */
-void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH]) {
+void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH]) {
 
   int i, j;
 
-  for (i = 0; i < TERMINAL_HEIGHT; i++) {
+  // Populate dungeon area
+  for (i = 0; i < DUNGEON_HEIGHT; i++) {
     for (j = 0; j < TERMINAL_WIDTH; j++) {
 
       dungeon[i][j] = ROCK_CHAR;
+
+    }
+  }
+
+  // Populate status bar
+  for (i = DUNGEON_HEIGHT; i < TERMINAL_HEIGHT; i++) {
+
+    int index = 0;
+    dungeon[i][index] = 'S';
+    index++;
+    dungeon[i][index] = 'T';
+    index++;
+    dungeon[i][index] = 'A';
+    index++;
+    dungeon[i][index] = 'T';
+    index++;
+    dungeon[i][index] = 'U';
+    index++;
+    dungeon[i][index] = 'S';
+    index++;
+    
+    // Fill rest with white space
+    for (j = index; j < TERMINAL_WIDTH; j++) {
+
+      dungeon[i][j] = ' ';
 
     }
   }

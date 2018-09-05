@@ -9,7 +9,7 @@
 #define DUNGEON_GENERATION_H
 
 #define TERMINAL_WIDTH 80
-#define TERMINAL_HEIGHT 21
+#define TERMINAL_HEIGHT 24
 
 struct room;
 
@@ -19,7 +19,7 @@ void render_room(struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
 
 void init_room(struct room *, char, char, char, char, char *); 
 
-void init_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
+void init_dungeon_arr(char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
 
 void show_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
 
