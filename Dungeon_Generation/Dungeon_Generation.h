@@ -13,11 +13,13 @@
 
 struct room;
 
+void init_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
+
 void init_rooms(char, struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
 
 void render_room(struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
 
-void init_room(struct room *, char, char, char, char, char *); 
+void init_room(struct room *, char, char, char, char); 
 
 void render_corridors(char, struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
 

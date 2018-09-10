@@ -34,33 +34,46 @@ struct room {
   unsigned char y_pos;
   unsigned char x_size;
   unsigned char y_size;
-  char *hardness;
 };
 
 
 /*
- * Entry point for dungeon creation code
+ * Entry point for running dungeon creation code
  * Not yet setup for handling command line input
  *
  * @param argc
  * @param argv
  */
-int main(int argc, char *argv[]) {
-
+int main(int argc, char *argv[])
+{
   // 2D array for representing the entire dungeon with space for status updates
   char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH];
 
+  // Initialize a new dungeon and show in terminal
+  init_dungeon(dungeon);
+  
+  return 0;
+
+}
+
+
+/*
+ * Function for initializing a new dungeon.
+ *
+ * @param dungeon  2D array for representing the entire dungeon with space for status updates
+ */
+void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
+{
   // Initialize dungeon array
   init_dungeon_arr(dungeon);
 
-  
   // Set seed for random numbers as the current time in milliseconds
   int seed = time(NULL);
   srand(seed);
-  
+
   // Determine random room count for this dungeon
   char num_rooms = (rand() % (MAX_ROOM_COUNT - MIN_ROOM_COUNT) + MIN_ROOM_COUNT);
-		    
+
   // Declare array for keeping track of rooms within the dungeon
   struct room rooms[num_rooms];
 
@@ -69,13 +82,11 @@ int main(int argc, char *argv[]) {
 
   // Tunnels corridors between rooms
   render_corridors(num_rooms, rooms, dungeon);
-  
-  
+
+
   // Display the dungeon
   show_dungeon(dungeon);
-  
-  return 0;
-  
+
 }
 
 
@@ -85,8 +96,8 @@ int main(int argc, char *argv[]) {
  * @param room_count  number of rooms to create
  * @param p_rooms  pointer to array storing room information
  */
-void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH]) {
-
+void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
+{
   // Create a number of random rooms equivalent to room_count
   unsigned char valid_room_count = 0;
   while (valid_room_count < req_room_count) {
@@ -163,8 +174,7 @@ void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL
     // Room is valid
     // Create new room
     struct room room_to_add;
-    char hardness[rand_ysize][rand_xsize];
-    init_room(&room_to_add, rand_xpos, rand_ypos, rand_xsize, rand_ysize, (char *)hardness);
+    init_room(&room_to_add, rand_xpos, rand_ypos, rand_xsize, rand_ysize);
 
     // Add new room to array for tracking
     p_rooms[valid_room_count] = room_to_add;
@@ -182,11 +192,11 @@ void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL
 /*
  * Renders the room onto the dungeon map
  *
- * @param
- * @param
+ * @param room_inst  pointer to instance of room struct which holds information on room being rendered
+ * @param dungeon  2D array representation of dungeon which room is being rendered in
  */
-void render_room(struct room *room_inst, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH]) {
-
+void render_room(struct room *room_inst, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
+{
   int i, j;
 
   for (i = room_inst->y_pos; i < (room_inst->y_pos + room_inst->y_size); i++) {
@@ -202,20 +212,18 @@ void render_room(struct room *room_inst, char dungeon[TERMINAL_HEIGHT][TERMINAL_
 /*
  * Initializes room struct with given parameters as field values
  *
- * @param
- * @param
- * @param
- * @param
- * @param
- * @param
+ * @param room_inst  pointer to instance of room struct which is being initialized
+ * @param x_pos  X position for upper left corner of the room
+ * @param y_pos  Y position for upper left corner of the room
+ * @param x_size  Room's size in the X direction 
+ * @param y_size  Room's size in the Y direction
  */
-void init_room(struct room *room_inst, char x_pos, char y_pos, char x_size, char y_size, char *hardness) {
-  
+void init_room(struct room *room_inst, char x_pos, char y_pos, char x_size, char y_size)
+{  
     room_inst->x_pos = x_pos;
     room_inst->y_pos = y_pos;
     room_inst->x_size = x_size;
     room_inst->y_size = y_size;
-    room_inst->hardness = hardness;
     
 }
 
@@ -223,12 +231,12 @@ void init_room(struct room *room_inst, char x_pos, char y_pos, char x_size, char
 /*
  * Creates corridors between rooms
  *
- * @param
- * @param
- * @param
+ * @param room_count  Number of rooms in the dungeon
+ * @param p_rooms  pointer to array containing all rooms in the dungeon
+ * @param dungeon  2D array representing the dungeon which corridors on being rendered in
  */
-void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH]) {
-
+void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
+{
   int i;
 
   for (i = 0; i < room_count; i++) {
@@ -287,8 +295,8 @@ void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMIN
  *
  * @param dungeon  2D array representing the dungeon
  */
-void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH]) {
-
+void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
+{
   int i, j;
 
   // Populate dungeon area
@@ -332,8 +340,8 @@ void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH]) {
  *
  * @param dungeon  2D array representing the dungeon
  */
-void show_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH]) {
-
+void show_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
+{
   int i, j;
 
   for (i = 0; i < TERMINAL_HEIGHT; i++) {
