@@ -19,12 +19,18 @@
 #define CORRIDOR_CHAR '#'
 
 // Graphics Rendering Non-Changeable Settings
-#define DUNGEON_HEIGHT 21
 #define MIN_ROOM_COUNT 5
 #define MAX_ROOM_COUNT 8
 #define MIN_ROOM_X_SIZE 3
 #define MIN_ROOM_Y_SIZE 2
 #define ROOM_SIZE_RANGE 5
+
+// Hardness values macros
+#define DUNGEON_BORDER_HARDNESS 255
+#define MIN_ROCK_HARDNESS 1
+#define ROCK_HARDNESS_RANGE 254
+#define CORRIDOR_HARDNESS 0
+#define ROOM_HARDNESS 0
 
 
 // Data structure for representing a room in the dungeon
@@ -49,8 +55,11 @@ int main(int argc, char *argv[])
   // 2D array for representing the entire dungeon with space for status updates
   char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH];
 
+  // 2D array representing hardness of each square in the dungeon
+  unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH];
+  
   // Initialize a new dungeon and show in terminal
-  init_dungeon(dungeon);
+  init_dungeon(dungeon, material_hardness);
   
   return 0;
 
@@ -62,10 +71,10 @@ int main(int argc, char *argv[])
  *
  * @param dungeon  2D array for representing the entire dungeon with space for status updates
  */
-void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
+void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   // Initialize dungeon array
-  init_dungeon_arr(dungeon);
+  init_dungeon_arr(dungeon, material_hardness);
 
   // Set seed for random numbers as the current time in milliseconds
   int seed = time(NULL);
@@ -78,14 +87,17 @@ void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
   struct room rooms[num_rooms];
 
   // Initialize all of the rooms
-  init_rooms(num_rooms, rooms, dungeon);
+  init_rooms(num_rooms, rooms, dungeon, material_hardness);
 
   // Tunnels corridors between rooms
-  render_corridors(num_rooms, rooms, dungeon);
+  render_corridors(num_rooms, rooms, dungeon, material_hardness);
 
 
   // Display the dungeon
   show_dungeon(dungeon);
+
+  // Display hardness values
+  show_hardness(material_hardness);
 
 }
 
@@ -96,7 +108,7 @@ void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
  * @param room_count  number of rooms to create
  * @param p_rooms  pointer to array storing room information
  */
-void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
+void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   // Create a number of random rooms equivalent to room_count
   unsigned char valid_room_count = 0;
@@ -180,7 +192,7 @@ void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL
     p_rooms[valid_room_count] = room_to_add;
 
     // Write new room to the dungeon
-    render_room(&room_to_add, dungeon);
+    render_room(&room_to_add, dungeon, material_hardness);
     
 
     // Increment number of rooms created
@@ -195,14 +207,16 @@ void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL
  * @param room_inst  pointer to instance of room struct which holds information on room being rendered
  * @param dungeon  2D array representation of dungeon which room is being rendered in
  */
-void render_room(struct room *room_inst, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
+void render_room(struct room *room_inst, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   int i, j;
 
   for (i = room_inst->y_pos; i < (room_inst->y_pos + room_inst->y_size); i++) {
     for (j = room_inst->x_pos; j < (room_inst->x_pos + room_inst->x_size); j++) {
 
+      // Write room character to selected square and give hardness value for room
       dungeon[i][j] = ROOM_CHAR;
+      material_hardness[i][j] = ROOM_HARDNESS;
       
     }
   }
@@ -235,7 +249,7 @@ void init_room(struct room *room_inst, char x_pos, char y_pos, char x_size, char
  * @param p_rooms  pointer to array containing all rooms in the dungeon
  * @param dungeon  2D array representing the dungeon which corridors on being rendered in
  */
-void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
+void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   int i;
 
@@ -271,17 +285,23 @@ void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMIN
 
     for (x = x0; x != x1; x += x_increment) {
 
-      // If it is not a room draw a corridor symbol
+      // If it is not a room draw a corridor symbol and give hardness value for corridor
       if (dungeon[y0][x] != ROOM_CHAR) {
+	
 	dungeon[y0][x] = CORRIDOR_CHAR;
+	material_hardness[y0][x] = CORRIDOR_HARDNESS;
+	
       }
       
     }
     for (y = y0; y != y1; y += y_increment) {
 
-      // If it is not a room draw a corridor symbol
+      // If it is not a room draw a corridor symbol and give hardness value for corridor
       if (dungeon[y][x1] != ROOM_CHAR) {
+	
 	dungeon[y][x1] = CORRIDOR_CHAR;
+	material_hardness[y][x1] = CORRIDOR_HARDNESS;
+	
       }
       
     }
@@ -295,14 +315,31 @@ void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMIN
  *
  * @param dungeon  2D array representing the dungeon
  */
-void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
+void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   int i, j;
 
-  // Populate dungeon area
+  // Populate dungeon area and hardness values
   for (i = 0; i < DUNGEON_HEIGHT; i++) {
     for (j = 0; j < TERMINAL_WIDTH; j++) {
 
+      // Check if on the outermost walls of the dungeon
+      if (i == 0 || i == (DUNGEON_HEIGHT - 1)) {
+
+	// Top/bottom most walls therefore assign hardness value for the dungeon border
+	material_hardness[i][j] = DUNGEON_BORDER_HARDNESS;
+	
+      } else if (j == 0 || j == (TERMINAL_WIDTH - 1)) {
+
+	// Left/right most walls therefore assign hardness value for dungeon border
+	material_hardness[i][j] = DUNGEON_BORDER_HARDNESS;
+
+      } else {
+
+	// Assign random integer between 1-254 inclusive to all other cells
+	material_hardness[i][j] = (rand() % ROCK_HARDNESS_RANGE) + MIN_ROCK_HARDNESS; 
+
+      }
       dungeon[i][j] = ROCK_CHAR;
 
     }
@@ -354,3 +391,22 @@ void show_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
   }
 }
 
+
+/*
+ * Temporary function for displaying the hardness of each cell in the dungeon
+ *
+ * @param material_hardness  2D array representing hardness of each square in the dungeon
+ */
+void show_hardness(unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+{
+  int i, j;
+
+  for (i = 0; i < DUNGEON_HEIGHT; i++) {
+    for (j = 0; j < TERMINAL_WIDTH; j++) {
+
+      printf("%3d", material_hardness[i][j]);
+
+    }
+    printf("\n");
+  }
+}

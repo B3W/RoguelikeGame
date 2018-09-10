@@ -20,5 +20,8 @@
 	Added details to the @param annotations on some of  the functions where it was missing
 	Changed enclosing brackets on functions to start on the line below the function declaration as I think it looks cleaner
 
+09/10/2018 12:01 AM
+	Added hardness functionality for rock in the dungeon
+
 
 

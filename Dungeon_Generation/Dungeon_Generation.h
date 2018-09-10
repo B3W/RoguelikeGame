@@ -10,21 +10,26 @@
 
 #define TERMINAL_WIDTH 80
 #define TERMINAL_HEIGHT 24
+#define DUNGEON_HEIGHT 21
 
 struct room;
 
-void init_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
+void init_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
 
-void init_rooms(char, struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
+void init_rooms(char, struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
 
-void render_room(struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
+void render_room(struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
 
 void init_room(struct room *, char, char, char, char); 
 
-void render_corridors(char, struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
+void render_corridors(char, struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
 
-void init_dungeon_arr(char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
+void init_dungeon_arr(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
 
 void show_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
+
+
+void show_hardness(unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
+
 
 #endif
