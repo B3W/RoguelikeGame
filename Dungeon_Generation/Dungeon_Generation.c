@@ -96,9 +96,6 @@ void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char m
   // Display the dungeon
   show_dungeon(dungeon);
 
-  // Display hardness values
-  show_hardness(material_hardness);
-
 }
 
 
@@ -327,21 +324,22 @@ void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned ch
       if (i == 0 || i == (DUNGEON_HEIGHT - 1)) {
 
 	// Top/bottom most walls therefore assign hardness value for the dungeon border
+	dungeon[i][j] = '-';
 	material_hardness[i][j] = DUNGEON_BORDER_HARDNESS;
 	
       } else if (j == 0 || j == (TERMINAL_WIDTH - 1)) {
 
 	// Left/right most walls therefore assign hardness value for dungeon border
+	dungeon[i][j] = '|';
 	material_hardness[i][j] = DUNGEON_BORDER_HARDNESS;
 
       } else {
 
 	// Assign random integer between 1-254 inclusive to all other cells
+	dungeon[i][j] = ROCK_CHAR;
 	material_hardness[i][j] = (rand() % ROCK_HARDNESS_RANGE) + MIN_ROCK_HARDNESS; 
 
       }
-      dungeon[i][j] = ROCK_CHAR;
-
     }
   }
 
@@ -385,26 +383,6 @@ void show_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
     for (j = 0; j < TERMINAL_WIDTH; j++) {
 
       printf("%c", dungeon[i][j]);
-
-    }
-    printf("\n");
-  }
-}
-
-
-/*
- * Temporary function for displaying the hardness of each cell in the dungeon
- *
- * @param material_hardness  2D array representing hardness of each square in the dungeon
- */
-void show_hardness(unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
-{
-  int i, j;
-
-  for (i = 0; i < DUNGEON_HEIGHT; i++) {
-    for (j = 0; j < TERMINAL_WIDTH; j++) {
-
-      printf("%3d", material_hardness[i][j]);
 
     }
     printf("\n");

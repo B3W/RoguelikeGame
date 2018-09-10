@@ -28,8 +28,4 @@ void init_dungeon_arr(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGE
 
 void show_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
 
-
-void show_hardness(unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
-
-
 #endif
