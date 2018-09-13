@@ -7,8 +7,11 @@
  *   Date: 09/01/2018
  */
 
+#include <endian.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include "Dungeon_Generation.h"
 
@@ -17,6 +20,7 @@
 #define ROCK_CHAR ' '
 #define ROOM_CHAR '.'
 #define CORRIDOR_CHAR '#'
+#define PLAYER_CHAR '@'
 
 // Graphics Rendering Non-Changeable Settings
 #define MIN_ROOM_COUNT 5
@@ -42,6 +46,17 @@ struct room {
   unsigned char y_size;
 };
 
+// Data structure for representing the player character on the dungeon map
+struct PC {
+  uint8_t x_pos;
+  uint8_t y_pos;
+};
+
+// Global variable for keeping track of how many rooms there are in the dungeon
+char num_rooms;
+// Global variable for keeping track of the player character
+struct PC player_character;
+
 
 /*
  * Entry point for running dungeon creation code
@@ -57,9 +72,34 @@ int main(int argc, char *argv[])
 
   // 2D array representing hardness of each square in the dungeon
   unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH];
+
+  // Check for command line arguments
+  char load_flag = 0;
+  char save_flag = 0;
+
+  if (argc > 1) {
+
+    int i;
+    for (i = 1; i < argc; i++) {
+      // Check which switches were included
+      if (argv[i][1] == '-') {
+	if (strcmp(argv[i], "--load") == 0) {
+	  load_flag = 1;
+
+	} else if (strcmp(argv[i], "--save") == 0) {
+	  save_flag = 1;
+
+	}
+      } else {
+	printf ("%s contains invalid format.\nMake sure switches are preceded by \'--\'.\nDungeon generation  exiting...\n", argv[i]);
+	exit(-1);
+
+      }
+    }
+  }
   
   // Initialize a new dungeon and show in terminal
-  init_dungeon(dungeon, material_hardness);
+  init_dungeon(dungeon, material_hardness, load_flag, save_flag);
   
   return 0;
 
@@ -71,31 +111,99 @@ int main(int argc, char *argv[])
  *
  * @param dungeon  2D array for representing the entire dungeon with space for status updates
  */
-void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH], char load_flag, char save_flag)
+{
+  // Declare array for keeping track of rooms within the dungeon
+  struct room *rooms;
+
+  
+  // Determine wheter to load in a dungeon or create a new one
+  if (load_flag) {
+
+    // Check if dungeon file exists, if not generate a new one
+    char *file_path = get_dungeon_file_path();
+    FILE *file;
+    if ((file = fopen(file_path, "r"))) {
+
+      // Dungeon file exists so load existing
+      fclose(file);
+      rooms = load_dungeon(dungeon, material_hardness);
+
+    } else {
+
+      // Dungeon file doesn't exist so create new dungeon
+      rooms = generate_dungeon(dungeon, material_hardness);
+
+    }
+    
+  } else {
+
+    rooms = generate_dungeon(dungeon, material_hardness);
+    
+  }
+
+  
+  // Display the dungeon
+  show_dungeon(dungeon);
+
+  
+  // Determine whether to save the dungeon back to disk or not
+  if (save_flag) {
+
+    save_dungeon(material_hardness, rooms);
+
+  }
+
+  
+  // Free memory allocated for rooms array
+  free(rooms);
+}
+
+
+/*
+ * Function for generating a new dungeon
+ *
+ * @param
+ * @param
+ * @param
+ */
+struct room * generate_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   // Initialize dungeon array
   init_dungeon_arr(dungeon, material_hardness);
 
+  
   // Set seed for random numbers as the current time in milliseconds
   int seed = time(NULL);
   srand(seed);
-
+  
   // Determine random room count for this dungeon
-  char num_rooms = (rand() % (MAX_ROOM_COUNT - MIN_ROOM_COUNT) + MIN_ROOM_COUNT);
+  num_rooms = (rand() % (MAX_ROOM_COUNT - MIN_ROOM_COUNT) + MIN_ROOM_COUNT);
 
-  // Declare array for keeping track of rooms within the dungeon
-  struct room rooms[num_rooms];
+  
+  // Declare memory for room array
+  struct room *rooms;
+  if (!(rooms = malloc(num_rooms * sizeof(*rooms)))) {
+    printf("malloc() failed\n");
+    exit(-1);
+  }
 
+  
   // Initialize all of the rooms
   init_rooms(num_rooms, rooms, dungeon, material_hardness);
 
+  
   // Tunnels corridors between rooms
   render_corridors(num_rooms, rooms, dungeon, material_hardness);
 
+  
+  // Place character
+  player_character.x_pos = rooms[0].x_pos;
+  player_character.y_pos = rooms[0].y_pos;
+  dungeon[player_character.y_pos][player_character.x_pos] = PLAYER_CHAR;
 
-  // Display the dungeon
-  show_dungeon(dungeon);
-
+  
+  return rooms;
 }
 
 
@@ -370,6 +478,228 @@ void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned ch
 }
 
 
+/*
+ * Function for loading a dungeon from disk
+ *
+ * @param
+ * @param
+ * @param
+ */
+struct room * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+{
+  // Get path to file
+  char *file_path;
+  file_path = get_dungeon_file_path();
+
+  // Open file for reading
+  FILE *file;
+  if (!(file = fopen(file_path, "r"))) {
+    printf("Failed to open %s in save_dungeon()", file_path);
+    exit(-1);
+  }
+
+  // Free memory allocated to file_path
+  free(file_path);
+
+  
+  // Read file type marker
+  char *file_type_marker;
+  if (!(file_type_marker = malloc(12 + 1))) {
+    printf("malloc() failed assigning space for file_type_marker");
+    exit(-1);
+  }
+  fread(file_type_marker, 12, 1, file);
+  free(file_type_marker);
+
+  
+  // Read file version
+  uint32_t be_file_version;
+  fread(&be_file_version, sizeof(uint32_t), 1, file);
+
+  
+  // Read file size
+  uint32_t be_file_size;
+  fread(&be_file_size, sizeof(uint32_t), 1, file);
+  uint32_t file_size = be32toh(be_file_size);
+  
+
+  // Read Player Character's position
+  fread(&player_character, sizeof(struct PC), 1, file);
+
+  
+  // Read hardness matrix
+  fread(material_hardness, sizeof(unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]), 1, file);
+  
+  
+  // Read in room data
+  // Calculate number of rooms from size of file
+  num_rooms = (file_size - 1702) / 4;
+  // Allocate appropriate amount of memory
+  struct room *room_ptr;
+  if (!(room_ptr  = malloc(num_rooms * sizeof(*room_ptr)))) {
+    printf ("malloc() error in load_dungeon()");
+    exit(-1);
+  }
+  fread(room_ptr, sizeof(*room_ptr), num_rooms, file);
+
+
+  // Configure dungeon from hardness matrix
+  int i, j;
+  for (i = 0; i < DUNGEON_HEIGHT; i++) {
+    for (j = 0; j < TERMINAL_WIDTH; j++) {
+
+      // Check if on the outermost walls of the dungeon
+      if (i == 0 || i == (DUNGEON_HEIGHT - 1)) {
+
+        // Top/bottom most walls therefore assign hardness value for the dungeon border
+        dungeon[i][j] = '-';
+
+      } else if (j == 0 || j == (TERMINAL_WIDTH - 1)) {
+
+        // Left/right most walls therefore assign hardness value for dungeon border
+        dungeon[i][j] = '|';
+
+      } else {
+
+	// Check if corridor or room
+	if (material_hardness[i][j] == 0) {
+	  dungeon[i][j] = CORRIDOR_CHAR;
+
+	} else {
+	  dungeon[i][j] = ROCK_CHAR;
+
+	}
+      }
+    }
+  }
+
+  // Fill in rooms
+  int k;
+  for (i = 0; i < num_rooms; i++) {
+    struct room temp_room = room_ptr[i];
+
+    for (j = temp_room.y_pos; j < (temp_room.y_pos + temp_room.y_size); j++) {
+      for (k = temp_room.x_pos; k < (temp_room.x_pos + temp_room.x_size); k++) {
+	dungeon[j][k] = ROOM_CHAR;
+
+      }
+    }
+  }
+
+  // Populate status bar
+  for (i = DUNGEON_HEIGHT; i < TERMINAL_HEIGHT; i++) {
+
+    int index = 0;
+    dungeon[i][index] = 'S';
+    index++;
+    dungeon[i][index] = 'T';
+    index++;
+    dungeon[i][index] = 'A';
+    index++;
+    dungeon[i][index] = 'T';
+    index++;
+    dungeon[i][index] = 'U';
+    index++;
+    dungeon[i][index] = 'S';
+    index++;
+
+    // Fill rest with white space
+    for (j = index; j < TERMINAL_WIDTH; j++) {
+
+      dungeon[i][j] = ' ';
+
+    }
+  }
+
+  // Place character
+  dungeon[player_character.y_pos][player_character.x_pos] = PLAYER_CHAR;
+  
+
+  return room_ptr;
+}
+
+
+/*
+ * Function for saving the dungeon to disk
+ *
+ * @param
+ * @param
+ */
+void save_dungeon(unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH], struct room *p_rooms)
+{
+  // Get path to file
+  char *file_path;
+  file_path = get_dungeon_file_path();
+
+  // Open file for writing
+  FILE *file;
+  if (!(file = fopen(file_path, "w"))) {
+    printf("Failed to open %s in save_dungeon()", file_path);
+    exit(-1);
+  }
+
+  // Free memory allocated to file_path
+  free(file_path);
+
+  
+  // Write file type marker
+  char file_type_marker[] = "RLG327-F2018";
+  fwrite(file_type_marker, sizeof(file_type_marker) - 1, 1, file);
+
+  
+  // Write file version to file in Big Endian byte ordering
+  uint32_t file_version = 0;
+  uint32_t be_file_version = htobe32(file_version);
+  fwrite(&be_file_version, sizeof(uint32_t), 1, file);
+
+  
+  // Write file size to file in Big Endian byte ordering
+  uint32_t file_size = 1702 + (num_rooms * 4);
+  uint32_t be_file_size = htobe32(file_size);  
+  fwrite(&be_file_size, sizeof(uint32_t), 1, file);
+
+
+  // Write player character position
+  fwrite(&player_character, sizeof(struct PC), 1, file);
+  
+  
+  // Write hardness matrix
+  fwrite(material_hardness, sizeof(unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]), 1, file);
+  
+  // TODO: Write room data
+  fwrite(p_rooms, sizeof(*p_rooms), num_rooms, file);
+	 
+  
+  // Close file
+  fclose(file);
+}
+
+
+/*
+ * Takes in pointer and assigns it the path to the dungeon file
+ *
+ * @return  Address to location dungeon file path is stored
+ */
+char * get_dungeon_file_path(void)
+{
+  // Path to dungeon from home
+  char path_dungeon[] = "/.rlg327/dungeon";
+
+  // Allocate memory for combined path
+  char *path_buffer;
+  if (!(path_buffer = malloc(strlen(getenv("HOME")) + strlen(path_dungeon) + 1))) {
+    printf("malloc() failed in get_dungeon_file_path()");
+    exit(-1);
+  }
+
+  // Combine the paths
+  strcpy(path_buffer, getenv("HOME"));
+  strcat(path_buffer, path_dungeon);
+
+  return path_buffer;
+}
+
+  
 /*
  * Function for showing the dungeon in the console
  *

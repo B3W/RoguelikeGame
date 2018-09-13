@@ -1,29 +1,29 @@
-Rougelike Dungeon Generation
+Rougelike Dungeon Generation With Load/Save Ability
   The purpose of this program is to procedurally generate a randomized dungeon
   level. This dungeon will be utilized for displaying rooms, corridors, enemies,
   and items to the player (some of those things have yet to be implemented).
+
+  The program also has the ability to load in a dungeon from disk or save a dungeon
+  to disk for loading at a later time.
 
   Within the dungeon, the meaning of currently diplayed characters is as follows:
     ' ' - Denotes rock
     '.' - Denotes room
     '#' - Denotes corridor
+    '@' - Denotes player
 
 Implementation
-  This implementation of the dungeon generation program meets all specifications.
-  At least 5 rooms are randomly generated with x_size >= 3 and y_size >= 2 without
-  touching or coming within one position of each other in any direction. The
-  corridors are then attached to each room to allow for players to move in between
-  them. The door location to the rooms is randomized. More randomization to the
-  paths will be added later.
+  This implementation of the the load/save feature meets all specifications. Any
+  dungeon created from another student's function program can be loaded from this
+  program. This was tested with Jeremy's test dungeons. All test dungeons were
+  successfully loaded regardless of the Endianess. Also, dungeons saved by this
+  program can be loaded by any other student with functioning code.
 
-  init_rooms on line 84 does the heavy lifting for creating and error checking the
-  rooms. render_corridors on line 230 takes care of creating paths between rooms.
-
-  Some of the settings have been generalized so altering the appearance of
-  the dungeons will be easy if desired in the future.
-
+  Lastly, if there is an attempt made to load a dungeon and the dungeon file does
+  not exist then a new one will be generated.
+  
 Author
   Weston Berg (weberg@iastate.edu)
 
 Date
-  September 5th, 2018
+  September 12th, 2018

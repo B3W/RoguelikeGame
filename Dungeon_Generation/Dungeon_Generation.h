@@ -14,7 +14,9 @@
 
 struct room;
 
-void init_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
+void init_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH], char, char);
+
+struct room * generate_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
 
 void init_rooms(char, struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
 
@@ -25,6 +27,12 @@ void init_room(struct room *, char, char, char, char);
 void render_corridors(char, struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
 
 void init_dungeon_arr(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
+
+struct room * load_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
+
+void save_dungeon(unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH], struct room *);
+
+char * get_dungeon_file_path(void);
 
 void show_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
 

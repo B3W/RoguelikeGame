@@ -23,5 +23,11 @@
 09/10/2018 12:01 AM
 	Added hardness functionality for rock in the dungeon
 
+09/11/2018 9:00 PM
+	Added ability to load and save dungeons via command line switches
+	Added parameters to the init_dungeon function to accomadate load and save
+	Added load_dungeon and save_dungeon functions
 
-
+09/12/2018 6:15 PM
+	Added generate_dungeon function
+	Added check to see if 'dungeon' file exists. If not a new one is generated
