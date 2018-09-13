@@ -39,12 +39,12 @@
 
 // Data structure for representing a room in the dungeon
 // Use char instead of int to save on memory size
-struct room {
-  unsigned char x_pos;
-  unsigned char y_pos;
-  unsigned char x_size;
-  unsigned char y_size;
-};
+typedef struct room {
+  uint8_t x_pos;
+  uint8_t y_pos;
+  uint8_t x_size;
+  uint8_t y_size;
+} room_t;
 
 // Data structure for representing the player character on the dungeon map
 struct PC {
@@ -221,16 +221,16 @@ void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL
 
     // Generate random values for room
     // Random xpos (in range 1 - 79)
-    char rand_xpos = (rand() % (TERMINAL_WIDTH - 2)) + 1;
+    uint8_t rand_xpos = (rand() % (TERMINAL_WIDTH - 2)) + 1;
     
     // Randome ypos (in range 1 - 20)
-    char rand_ypos = (rand() % (DUNGEON_HEIGHT - 2)) + 1;
+    uint8_t rand_ypos = (rand() % (DUNGEON_HEIGHT - 2)) + 1;
 
     // Random x size
-    char rand_xsize = (rand() % ROOM_SIZE_RANGE) + MIN_ROOM_X_SIZE;
+    uint8_t rand_xsize = (rand() % ROOM_SIZE_RANGE) + MIN_ROOM_X_SIZE;
 
     // Random y size
-    char rand_ysize = (rand() % ROOM_SIZE_RANGE) + MIN_ROOM_Y_SIZE;
+    uint8_t rand_ysize = (rand() % ROOM_SIZE_RANGE) + MIN_ROOM_Y_SIZE;
 
 
     // Validate random values against terminal border
@@ -314,7 +314,7 @@ void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL
  */
 void render_room(struct room *room_inst, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
-  int i, j;
+  uint8_t i, j;
 
   for (i = room_inst->y_pos; i < (room_inst->y_pos + room_inst->y_size); i++) {
     for (j = room_inst->x_pos; j < (room_inst->x_pos + room_inst->x_size); j++) {
@@ -373,20 +373,22 @@ void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMIN
       
     }
 
+    
     // Randomize origin door location
-    unsigned char x0 = origin.x_pos + (rand() % origin.x_size);
-    unsigned char y0 = origin.y_pos + (rand() % origin.y_size);
+    uint8_t x0 = origin.x_pos + (rand() % origin.x_size);
+    uint8_t y0 = origin.y_pos + (rand() % origin.y_size);
 
     // Randomize destination door location
-    unsigned char x1 = destination.x_pos + (rand() % destination.x_size);
-    unsigned char y1 = destination.y_pos + (rand() % destination.y_size);
+    uint8_t x1 = destination.x_pos + (rand() % destination.x_size);
+    uint8_t y1 = destination.y_pos + (rand() % destination.y_size);
 
     // Calculate the incrementing
-    int x_increment = abs(x1 - x0)/(x1 - x0);
-    int y_increment = abs(y1 - y0)/(y1 - y0);
+    int8_t x_increment = abs(x1 - x0)/(x1 - x0);
+    int8_t y_increment = abs(y1 - y0)/(y1 - y0);
 
+    
     // Begin carving the corridor into the dungeon
-    int x, y;
+    uint8_t x, y;
 
     for (x = x0; x != x1; x += x_increment) {
 
@@ -399,6 +401,7 @@ void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMIN
       }
       
     }
+
     for (y = y0; y != y1; y += y_increment) {
 
       // If it is not a room draw a corridor symbol and give hardness value for corridor
@@ -422,7 +425,7 @@ void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMIN
  */
 void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
-  int i, j;
+  uint8_t i, j;
 
   // Populate dungeon area and hardness values
   for (i = 0; i < DUNGEON_HEIGHT; i++) {
@@ -452,9 +455,10 @@ void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned ch
   }
 
   // Populate status bar
+  uint8_t index;
   for (i = DUNGEON_HEIGHT; i < TERMINAL_HEIGHT; i++) {
 
-    int index = 0;
+    index = 0;
     dungeon[i][index] = 'S';
     index++;
     dungeon[i][index] = 'T';
@@ -544,7 +548,7 @@ struct room * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsign
 
 
   // Configure dungeon from hardness matrix
-  int i, j;
+  uint8_t i, j;
   for (i = 0; i < DUNGEON_HEIGHT; i++) {
     for (j = 0; j < TERMINAL_WIDTH; j++) {
 
@@ -574,7 +578,7 @@ struct room * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsign
   }
 
   // Fill in rooms
-  int k;
+  uint8_t k;
   for (i = 0; i < num_rooms; i++) {
     struct room temp_room = room_ptr[i];
 
@@ -587,9 +591,10 @@ struct room * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsign
   }
 
   // Populate status bar
+  uint8_t index;
   for (i = DUNGEON_HEIGHT; i < TERMINAL_HEIGHT; i++) {
 
-    int index = 0;
+    index = 0;
     dungeon[i][index] = 'S';
     index++;
     dungeon[i][index] = 'T';
@@ -707,7 +712,7 @@ char * get_dungeon_file_path(void)
  */
 void show_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH])
 {
-  int i, j;
+  uint8_t i, j;
 
   for (i = 0; i < TERMINAL_HEIGHT; i++) {
     for (j = 0; j < TERMINAL_WIDTH; j++) {
