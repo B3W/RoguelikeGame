@@ -8,7 +8,6 @@
  */
 
 #include <endian.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,6 +27,7 @@
 #define MIN_ROOM_X_SIZE 3
 #define MIN_ROOM_Y_SIZE 2
 #define ROOM_SIZE_RANGE 5
+#define ROOM_PADDING 1
 
 // Hardness values macros
 #define DUNGEON_BORDER_HARDNESS 255
@@ -53,7 +53,7 @@ typedef struct pc {
 } pc_t;
 
 // Global variable for keeping track of how many rooms there are in the dungeon
-char num_rooms;
+uint8_t num_rooms;
 // Global variable for keeping track of the player character
 pc_t player_character;
 
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
   char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH];
 
   // 2D array representing hardness of each square in the dungeon
-  unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH];
+  uint8_t material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH];
 
   // Check for command line arguments
   char load_flag = 0;
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
  *
  * @param dungeon  2D array for representing the entire dungeon with space for status updates
  */
-void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH], char load_flag, char save_flag)
+void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH], char load_flag, char save_flag)
 {
   // Declare array for keeping track of rooms within the dungeon
   room_t *rooms;
@@ -167,7 +167,7 @@ void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char m
  * @param
  * @param
  */
-room_t * generate_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+room_t * generate_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   // Initialize dungeon array
   init_dungeon_arr(dungeon, material_hardness);
@@ -213,10 +213,13 @@ room_t * generate_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigne
  * @param room_count  number of rooms to create
  * @param p_rooms  pointer to array storing room information
  */
-void init_rooms(char req_room_count, room_t *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+void init_rooms(uint8_t req_room_count, room_t *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   // Create a number of random rooms equivalent to room_count
-  unsigned char valid_room_count = 0;
+  uint8_t valid_room_count = 0;
+  uint8_t i, j;
+  char invalid_room_flag;
+
   while (valid_room_count < req_room_count) {
 
     // Generate random values for room
@@ -242,88 +245,50 @@ void init_rooms(char req_room_count, room_t *p_rooms, char dungeon[TERMINAL_HEIG
       
     }
 
-    // Validate random values against other rooms (rooms cannot touch or be within one space of each other in any direction)
-    int i, j;
-    char break_flag = 0;
     
-    for (i = rand_ypos; i < (rand_ypos + rand_ysize); i++) {
-      for (j = rand_xpos; j < (rand_xpos + rand_xsize); j++) {
+    // Validate random values against other rooms (rooms cannot touch or be within one space of each other in any direction)
+    invalid_room_flag = 0;
 
-	if (dungeon[i-1][j-1] == ROOM_CHAR) { // Upper Left
-	  break_flag = 1;
-	}else if (dungeon[i-1][j] == ROOM_CHAR) { // Up
-	  break_flag = 1;
-	}else if (dungeon[i-1][j+1] == ROOM_CHAR) { // Up Right
-	  break_flag = 1;
-	}else if (dungeon[i][j+1] == ROOM_CHAR) { // Right
-	  break_flag = 1;
-	}else if (dungeon[i+1][j+1] == ROOM_CHAR) { // Down Right
-	  break_flag = 1;
-	}else if (dungeon[i+1][j] == ROOM_CHAR) { // Down
-	  break_flag = 1;
-	}else if (dungeon[i+1][j-1] == ROOM_CHAR) { // Down Left
-	  break_flag = 1;
-	}else if (dungeon[i][j-1] == ROOM_CHAR) { // Left
-	  break_flag = 1;
-	}
+    for (i = 0; i < valid_room_count; i++) {
+      
+      if(!((rand_xpos > (p_rooms[i].x_pos + p_rooms[i].x_size + ROOM_PADDING)) ||   // New room not to right of valid room
+	   ((rand_xpos + rand_xsize + ROOM_PADDING) < p_rooms[i].x_pos) ||          // Valid room not to right of new room
+	   (rand_ypos > (p_rooms[i].y_pos + p_rooms[i].y_size + ROOM_PADDING)) ||   // New room not below valid room
+	   ((rand_ypos + rand_ysize + ROOM_PADDING) < p_rooms[i].y_pos))) {         // Valid room not below new room 
 
-	// Exit inner loop if invalid
-	// *** Find a better way to do this ***
-	if (break_flag) {
-	  break;
-	}
-	
-      }
-
-      // Break out of outer loop if invalid
-      if (break_flag) {
-	break;
+	invalid_room_flag = 1;
+	break;	
       }
       
     }
-  
+    
     // If the room was invalid then try again
-    if (break_flag) {
+    if (invalid_room_flag) {
       continue;
     }
 
-
+    
     // Room is valid
     // Create new room
     room_t room_to_add = { rand_xpos, rand_ypos, rand_xsize, rand_ysize };
 
     // Add new room to array for tracking
     p_rooms[valid_room_count] = room_to_add;
-
-    // Write new room to the dungeon
-    render_room(&room_to_add, dungeon, material_hardness);
     
+    // Write new room to the dungeon
+    for (i = room_to_add.y_pos; i < (room_to_add.y_pos + room_to_add.y_size); i++) {
+      for (j = room_to_add.x_pos; j < (room_to_add.x_pos + room_to_add.x_size); j++) {
+
+	// Write room character to selected square and give hardness value for room
+	dungeon[i][j] = ROOM_CHAR;
+	material_hardness[i][j] = ROOM_HARDNESS;
+
+      }
+    }
 
     // Increment number of rooms created
     valid_room_count++;
   }  
-}
-
-
-/*
- * Renders the room onto the dungeon map
- *
- * @param room_inst  pointer to instance of room struct which holds information on room being rendered
- * @param dungeon  2D array representation of dungeon which room is being rendered in
- */
-void render_room(room_t *room_inst, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
-{
-  uint8_t i, j;
-
-  for (i = room_inst->y_pos; i < (room_inst->y_pos + room_inst->y_size); i++) {
-    for (j = room_inst->x_pos; j < (room_inst->x_pos + room_inst->x_size); j++) {
-
-      // Write room character to selected square and give hardness value for room
-      dungeon[i][j] = ROOM_CHAR;
-      material_hardness[i][j] = ROOM_HARDNESS;
-      
-    }
-  }
 }
 
 
@@ -334,9 +299,9 @@ void render_room(room_t *room_inst, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH
  * @param p_rooms  pointer to array containing all rooms in the dungeon
  * @param dungeon  2D array representing the dungeon which corridors on being rendered in
  */
-void render_corridors(char room_count, room_t *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+void render_corridors(uint8_t room_count, room_t *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
-  int i;
+  uint8_t i;
 
   for (i = 0; i < room_count; i++) {
 
@@ -403,7 +368,7 @@ void render_corridors(char room_count, room_t *p_rooms, char dungeon[TERMINAL_HE
  *
  * @param dungeon  2D array representing the dungeon
  */
-void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   uint8_t i, j;
 
@@ -469,7 +434,7 @@ void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned ch
  * @param
  * @param
  */
-room_t * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+room_t * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   // Get path to file
   char *file_path;
@@ -512,7 +477,7 @@ room_t * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned ch
 
   
   // Read hardness matrix
-  fread(material_hardness, sizeof(unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]), 1, file);
+  fread(material_hardness, sizeof(uint8_t[DUNGEON_HEIGHT][TERMINAL_WIDTH]), 1, file);
   
   
   // Read in room data
@@ -610,7 +575,7 @@ room_t * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned ch
  * @param
  * @param
  */
-void save_dungeon(unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH], room_t *p_rooms)
+void save_dungeon(uint8_t material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH], room_t *p_rooms)
 {
   // Get path to file
   char *file_path;
@@ -649,7 +614,7 @@ void save_dungeon(unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH
   
   
   // Write hardness matrix
-  fwrite(material_hardness, sizeof(unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]), 1, file);
+  fwrite(material_hardness, sizeof(uint8_t[DUNGEON_HEIGHT][TERMINAL_WIDTH]), 1, file);
   
   // TODO: Write room data
   fwrite(p_rooms, sizeof(*p_rooms), num_rooms, file);
