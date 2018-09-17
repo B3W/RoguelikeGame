@@ -20,9 +20,7 @@ struct room * generate_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned c
 
 void init_rooms(char, struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
 
-void render_room(struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
-
-void init_room(struct room *, char, char, char, char); 
+void render_room(struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]); 
 
 void render_corridors(char, struct room *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
 

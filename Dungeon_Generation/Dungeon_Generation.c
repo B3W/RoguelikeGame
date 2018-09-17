@@ -47,15 +47,15 @@ typedef struct room {
 } room_t;
 
 // Data structure for representing the player character on the dungeon map
-struct PC {
+typedef struct pc {
   uint8_t x_pos;
   uint8_t y_pos;
-};
+} pc_t;
 
 // Global variable for keeping track of how many rooms there are in the dungeon
 char num_rooms;
 // Global variable for keeping track of the player character
-struct PC player_character;
+pc_t player_character;
 
 
 /*
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH], char load_flag, char save_flag)
 {
   // Declare array for keeping track of rooms within the dungeon
-  struct room *rooms;
+  room_t *rooms;
 
   
   // Determine wheter to load in a dungeon or create a new one
@@ -167,7 +167,7 @@ void init_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char m
  * @param
  * @param
  */
-struct room * generate_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+room_t * generate_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   // Initialize dungeon array
   init_dungeon_arr(dungeon, material_hardness);
@@ -182,7 +182,7 @@ struct room * generate_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], un
 
   
   // Declare memory for room array
-  struct room *rooms;
+  room_t *rooms;
   if (!(rooms = malloc(num_rooms * sizeof(*rooms)))) {
     printf("malloc() failed\n");
     exit(-1);
@@ -213,7 +213,7 @@ struct room * generate_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], un
  * @param room_count  number of rooms to create
  * @param p_rooms  pointer to array storing room information
  */
-void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+void init_rooms(char req_room_count, room_t *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   // Create a number of random rooms equivalent to room_count
   unsigned char valid_room_count = 0;
@@ -290,8 +290,7 @@ void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL
 
     // Room is valid
     // Create new room
-    struct room room_to_add;
-    init_room(&room_to_add, rand_xpos, rand_ypos, rand_xsize, rand_ysize);
+    room_t room_to_add = { rand_xpos, rand_ypos, rand_xsize, rand_ysize };
 
     // Add new room to array for tracking
     p_rooms[valid_room_count] = room_to_add;
@@ -312,7 +311,7 @@ void init_rooms(char req_room_count, struct room *p_rooms, char dungeon[TERMINAL
  * @param room_inst  pointer to instance of room struct which holds information on room being rendered
  * @param dungeon  2D array representation of dungeon which room is being rendered in
  */
-void render_room(struct room *room_inst, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+void render_room(room_t *room_inst, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   uint8_t i, j;
 
@@ -329,42 +328,23 @@ void render_room(struct room *room_inst, char dungeon[TERMINAL_HEIGHT][TERMINAL_
 
 
 /*
- * Initializes room struct with given parameters as field values
- *
- * @param room_inst  pointer to instance of room struct which is being initialized
- * @param x_pos  X position for upper left corner of the room
- * @param y_pos  Y position for upper left corner of the room
- * @param x_size  Room's size in the X direction 
- * @param y_size  Room's size in the Y direction
- */
-void init_room(struct room *room_inst, char x_pos, char y_pos, char x_size, char y_size)
-{  
-    room_inst->x_pos = x_pos;
-    room_inst->y_pos = y_pos;
-    room_inst->x_size = x_size;
-    room_inst->y_size = y_size;
-    
-}
-
-
-/*
  * Creates corridors between rooms
  *
  * @param room_count  Number of rooms in the dungeon
  * @param p_rooms  pointer to array containing all rooms in the dungeon
  * @param dungeon  2D array representing the dungeon which corridors on being rendered in
  */
-void render_corridors(char room_count, struct room *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+void render_corridors(char room_count, room_t *p_rooms, char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   int i;
 
   for (i = 0; i < room_count; i++) {
 
     // Room to begin in
-    struct room origin = p_rooms[i];
+    room_t origin = p_rooms[i];
 
     // Room to end in
-    struct room destination;
+    room_t destination;
     if ((i + 1) >= room_count) { // Check if it is necessary to wrap around to the beginning
       destination = p_rooms[0];
       
@@ -489,7 +469,7 @@ void init_dungeon_arr(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned ch
  * @param
  * @param
  */
-struct room * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
+room_t * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH])
 {
   // Get path to file
   char *file_path;
@@ -528,7 +508,7 @@ struct room * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsign
   
 
   // Read Player Character's position
-  fread(&player_character, sizeof(struct PC), 1, file);
+  fread(&player_character, sizeof(pc_t), 1, file);
 
   
   // Read hardness matrix
@@ -539,7 +519,7 @@ struct room * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsign
   // Calculate number of rooms from size of file
   num_rooms = (file_size - 1702) / 4;
   // Allocate appropriate amount of memory
-  struct room *room_ptr;
+  room_t *room_ptr;
   if (!(room_ptr  = malloc(num_rooms * sizeof(*room_ptr)))) {
     printf ("malloc() error in load_dungeon()");
     exit(-1);
@@ -580,7 +560,7 @@ struct room * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsign
   // Fill in rooms
   uint8_t k;
   for (i = 0; i < num_rooms; i++) {
-    struct room temp_room = room_ptr[i];
+    room_t temp_room = room_ptr[i];
 
     for (j = temp_room.y_pos; j < (temp_room.y_pos + temp_room.y_size); j++) {
       for (k = temp_room.x_pos; k < (temp_room.x_pos + temp_room.x_size); k++) {
@@ -630,7 +610,7 @@ struct room * load_dungeon(char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH], unsign
  * @param
  * @param
  */
-void save_dungeon(unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH], struct room *p_rooms)
+void save_dungeon(unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH], room_t *p_rooms)
 {
   // Get path to file
   char *file_path;
@@ -665,7 +645,7 @@ void save_dungeon(unsigned char material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH
 
 
   // Write player character position
-  fwrite(&player_character, sizeof(struct PC), 1, file);
+  fwrite(&player_character, sizeof(pc_t), 1, file);
   
   
   // Write hardness matrix

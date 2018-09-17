@@ -31,3 +31,8 @@
 09/12/2018 6:15 PM
 	Added generate_dungeon function
 	Added check to see if 'dungeon' file exists. If not a new one is generated
+
+09/16/2018 8:23 PM
+	Added typedef to structs and changed declarations in code
+	Removed init_rooms function in favor of one line initialization
+	
