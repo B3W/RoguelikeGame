@@ -1,5 +1,5 @@
 /*
- * Function declarations for Dungeon_Generation.c
+ * Function, struct, and macro declarations for Dungeon_Generation.c
  *
  *   Author: Weston Berg (weberg@iastate.edu)
  *   Date: 09/01/2018
@@ -14,24 +14,41 @@
 #define TERMINAL_HEIGHT 24
 #define DUNGEON_HEIGHT 21
 
-typedef struct room room_t;
+// Data structure for representing a room in the dungeon
+// uint8_t is utilized over int to save on memory size
+typedef struct room {
+  uint8_t x_pos;
+  uint8_t y_pos;
+  uint8_t x_size;
+  uint8_t y_size;
+} room_t;
 
-void init_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t[DUNGEON_HEIGHT][TERMINAL_WIDTH], char, char);
+// Data structure for representing player character on the dungeon map
+typedef struct pc {
+  uint8_t x_pos;
+  uint8_t y_pos;
+} pc_t;
 
-room_t * generate_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
+// Data structure containing all information on the dungeon
+typedef struct dungeon {
+  uint8_t num_rooms;
+  room_t *rooms;
+  pc_t player_character;
+  // 2D array representing map visible to player
+  unsigned char dungeon[TERMINAL_HEIGHT][TERMINAL_WIDTH];
+  // 2D array representing hardness of each square in the dungeon
+  uint8_t material_hardness[DUNGEON_HEIGHT][TERMINAL_WIDTH];
+} dungeon_t;
 
-void init_rooms(uint8_t, room_t *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
 
-void render_corridors(uint8_t, room_t *, char[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
+uint8_t init_dungeon(dungeon_t *, char, char);
 
-void init_dungeon_arr(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
+uint8_t load_dungeon(dungeon_t *);
 
-room_t * load_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH], uint8_t[DUNGEON_HEIGHT][TERMINAL_WIDTH]);
+uint8_t save_dungeon(dungeon_t *);
 
-void save_dungeon(uint8_t[DUNGEON_HEIGHT][TERMINAL_WIDTH], room_t *);
+void del_dungeon(dungeon_t *d);
 
-char * get_dungeon_file_path(void);
-
-void show_dungeon(char[TERMINAL_HEIGHT][TERMINAL_WIDTH]);
+void show_dungeon(dungeon_t *);
 
 #endif

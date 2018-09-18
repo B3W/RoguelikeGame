@@ -40,3 +40,14 @@
 	Removed render_room function and placed logic in init_rooms function
 	Fixed inefficient validation of new rooms within init_rooms function
 	Changed num_rooms variable from char to uint8_t
+
+09/18/2018 3:45 PM
+	Major refactoring of data types: Moved declarations to header, added dungeon data type
+	Edited functions to accept single parameter of type dungeon instead of multiple parameters for all fields in a dungeon
+	Edited load and save functions: Writing player data in two steps, added helper functions for reading and writing hardness matrix and room data
+	Added static annotation to functions not being used outside of Dungeon_Generation.c file and removed their prototypes from header file
+
+09/18/2018 4:00 PM
+	Removed main from Dungeon_Generation.c and moved it into seperate file main.c
+	Updated makefile to work with main.c
+
