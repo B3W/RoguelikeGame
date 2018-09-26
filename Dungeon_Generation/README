@@ -1,10 +1,12 @@
-Rougelike Dungeon Generation With Load/Save Ability
+Rougelike Dungeon Generation With Path Calculation
   The purpose of this program is to procedurally generate a randomized dungeon
   level. This dungeon will be utilized for displaying rooms, corridors, enemies,
   and items to the player (some of those things have yet to be implemented).
 
-  The program also has the ability to load in a dungeon from disk or save a dungeon
-  to disk for loading at a later time.
+  Additional Features of the progeam:
+    - Ability to load in a dungeon from disk or save a dungeon to disk for loading
+      at a later time.
+    - Pathing via Dijkstra's Algoritm for creatures to find the player character
 
   Within the dungeon, the meaning of currently diplayed characters is as follows:
     ' ' - Denotes rock
@@ -13,17 +15,16 @@ Rougelike Dungeon Generation With Load/Save Ability
     '@' - Denotes player
 
 Implementation
-  This implementation of the the load/save feature meets all specifications. Any
-  dungeon created from another student's function program can be loaded from this
-  program. This was tested with Jeremy's test dungeons. All test dungeons were
-  successfully loaded regardless of the Endianess. Also, dungeons saved by this
-  program can be loaded by any other student with functioning code.
+  This implementation of path computation meets all required specifications. The
+  program can generate a new dungeon or load an existing and proceed to calculate
+  the paths from all tiles in the dungeon to the player character via Dijkstra's
+  Algorithm. These path maps are then displayed along with the normal dungeon
+  view in the terminal. To be concise, the path maps only display the right most
+  digit of the path value. The path maps also display the player character by
+  convention as '@'.
 
-  Lastly, if there is an attempt made to load a dungeon and the dungeon file does
-  not exist then a new one will be generated.
-  
 Author
   Weston Berg (weberg@iastate.edu)
 
 Date
-  September 12th, 2018
+  September 26th, 2018

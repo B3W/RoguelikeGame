@@ -51,3 +51,22 @@
 	Removed main from Dungeon_Generation.c and moved it into seperate file main.c
 	Updated makefile to work with main.c
 
+09/18/2018 7:00 PM
+	Decoupled the status bar from the dungeon map as it is not needed within the dungeon data type and can be implemented separately later
+	To remove status bar added DUNGEON_WIDTH macro with value of 80 and initialized dungeon and hardness arrays as [DUNGEON_HEIGHT][DUNGEON_WIDTH]
+	Consolidated random number generator to a macro
+	Changed random range for room generation to offset from the border by a minimum of the minimum room size in that direction to lower attempts at dungeon creation
+	Corrected parameter annotations to functions
+
+09/20/2018 6:30 PM
+	Added draw_simple_path function for drawing the simplest corridor paths; Still needs some modifications
+	Will implement a complex path draw and switch between the two randomly when generating a dungeon
+	Adopting priority queue(heap) from Dr. Sheaffer's implementation
+
+09/25/2018 7:00 PM
+	Added calculate_paths function for determining paths from anywhere in the dungeon to the player character
+	Helper methods calculate_ntnl_path and calculate_tnl_path determine appropriate paths for non-tunneling creatures and tunneling creatures, respectively
+	Fields ntnl_path_map and tnl_path_map were added to the dungeon data structure for keeping track of pathing within the dungeon
+	heap.c, heap.h, and macros.h are being utilized from Dr. Sheaffer's code to implement the pathing algorithm
+	Added show_paths to allow for the path maps to be displayed in the terminal
+

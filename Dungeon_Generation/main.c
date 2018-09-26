@@ -39,6 +39,12 @@ int main(int argc, char *argv[])
   // Display the dungeon
   show_dungeon(&dungeon);
 
+  // Calculate the dungeon paths
+  calculate_paths(&dungeon);
+
+  // Show the paths
+  show_paths(&dungeon);
+  
   // Free memory allocated
   del_dungeon(&dungeon);
 
