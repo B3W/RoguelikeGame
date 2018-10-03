@@ -1,0 +1,85 @@
+09/04/2018
+	Program is completed up to corridor drawing
+
+09/05/2018 11:02 AM
+	Fixed accidental forward slash on line 68
+	Extended dungeon array to fit the status bar
+	Changed init_dungeon function to init_dungeon_arr
+	Changed room placing logic to only account for dungeon height
+
+09/05/2018 12:20 AM
+	Created render_corridors function for carving corridors between rooms
+	Re-added -Werror flag to Makefile after finishing testing that required warnings to be allowed
+	Updated README with character meanings and and updated implementation section
+
+09/09/2018 9:51 PM
+	Refactored by placing code in 'main' into a new function called 'init_dungeon'
+	'init_dungeon' was created to abstract dungeon creation into a single call; this will be helpful in the future
+	Added 'init_dungeon' to the header file
+	Removed 'hardness' field from room struct as creating a single 2D array keeping track of hardness for each square in the dungeon makes more sense
+	Added details to the @param annotations on some of  the functions where it was missing
+	Changed enclosing brackets on functions to start on the line below the function declaration as I think it looks cleaner
+
+09/10/2018 12:01 AM
+	Added hardness functionality for rock in the dungeon
+
+09/11/2018 9:00 PM
+	Added ability to load and save dungeons via command line switches
+	Added parameters to the init_dungeon function to accomadate load and save
+	Added load_dungeon and save_dungeon functions
+
+09/12/2018 6:15 PM
+	Added generate_dungeon function
+	Added check to see if 'dungeon' file exists. If not a new one is generated
+
+09/16/2018 8:23 PM
+	Added typedef to structs and changed declarations in code
+	Removed init_rooms function in favor of one line initialization
+
+09/16/2018 10:45 PM
+	Removed render_room function and placed logic in init_rooms function
+	Fixed inefficient validation of new rooms within init_rooms function
+	Changed num_rooms variable from char to uint8_t
+
+09/18/2018 3:45 PM
+	Major refactoring of data types: Moved declarations to header, added dungeon data type
+	Edited functions to accept single parameter of type dungeon instead of multiple parameters for all fields in a dungeon
+	Edited load and save functions: Writing player data in two steps, added helper functions for reading and writing hardness matrix and room data
+	Added static annotation to functions not being used outside of Dungeon_Generation.c file and removed their prototypes from header file
+
+09/18/2018 4:00 PM
+	Removed main from Dungeon_Generation.c and moved it into seperate file main.c
+	Updated makefile to work with main.c
+
+09/18/2018 7:00 PM
+	Decoupled the status bar from the dungeon map as it is not needed within the dungeon data type and can be implemented separately later
+	To remove status bar added DUNGEON_WIDTH macro with value of 80 and initialized dungeon and hardness arrays as [DUNGEON_HEIGHT][DUNGEON_WIDTH]
+	Consolidated random number generator to a macro
+	Changed random range for room generation to offset from the border by a minimum of the minimum room size in that direction to lower attempts at dungeon creation
+	Corrected parameter annotations to functions
+
+09/20/2018 6:30 PM
+	Added draw_simple_path function for drawing the simplest corridor paths; Still needs some modifications
+	Will implement a complex path draw and switch between the two randomly when generating a dungeon
+	Adopting priority queue(heap) from Dr. Sheaffer's implementation
+
+09/25/2018 7:00 PM
+	Added calculate_paths function for determining paths from anywhere in the dungeon to the player character
+	Helper methods calculate_ntnl_path and calculate_tnl_path determine appropriate paths for non-tunneling creatures and tunneling creatures, respectively
+	Fields ntnl_path_map and tnl_path_map were added to the dungeon data structure for keeping track of pathing within the dungeon
+	heap.c, heap.h, and macros.h are being utilized from Dr. Sheaffer's code to implement the pathing algorithm
+	Added show_paths to allow for the path maps to be displayed in the terminal
+
+10/02/2018 2:45 PM
+	For brevity, changed Dungeon_Generation.c and Dungeon_Generation.h to dgen.c and dgen.h, respectively
+	Modified include statements and Makefile to reflect this naming change
+
+	10/02/2018 3:45 PM
+	Decoupled pathfinding algorithm from the dungeon generation code
+	Added pathfinding.c and pathfinding.h to provide pathing functionality
+	Edited Makefile to accomodate extra files
+
+10/3/2018
+	Refactored file structure for the project to declutter folders
+	Changed 'include' statements and Makefile to accomodate new file structure
+
