@@ -79,7 +79,14 @@
 	Added pathfinding.c and pathfinding.h to provide pathing functionality
 	Edited Makefile to accomodate extra files
 
-10/3/2018
+10/03/2018 11:00 AM
 	Refactored file structure for the project to declutter folders
 	Changed 'include' statements and Makefile to accomodate new file structure
+
+10/03/2018 3:00 PM
+	Implemented randomized creature generation with creatures.c
+	All relevant code related to creatures is located in creatures folder
+
+10/09/2018 9:00 AM
+	Adopted Dr. Sheaffer's code up to this assignment as mine had a bug I could not find within the time alloted for the assignment
 

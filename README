@@ -1,11 +1,10 @@
-Rougelike Dungeon Generation With Path Calculation
+Rougelike Dungeon with User Input
   The purpose of this program is to procedurally generate a randomized dungeon
-  level. This dungeon will be utilized for displaying rooms, corridors, enemies,
-  and items to the player (some of those things have yet to be implemented).
+  levels. This dungeon will be utilized for displaying rooms, corridors, enemies,
+  and items to the player (some of those things have yet to be implemented). The
+  player can progress through levels via the stairs located within the dungeon.
 
   Additional Features of the progeam:
-    - Ability to load in a dungeon from disk or save a dungeon to disk for loading
-      at a later time.
     - Pathing via Dijkstra's Algoritm for creatures to find the player character
 
   Within the dungeon, the meaning of currently diplayed characters is as follows:
@@ -13,18 +12,20 @@ Rougelike Dungeon Generation With Path Calculation
     '.' - Denotes room
     '#' - Denotes corridor
     '@' - Denotes player
+    '0', '1', ... , 'e', 'f' - Denote monsters of various attributes
 
 Implementation
-  This implementation of path computation meets all required specifications. The
-  program can generate a new dungeon or load an existing and proceed to calculate
-  the paths from all tiles in the dungeon to the player character via Dijkstra's
-  Algorithm. These path maps are then displayed along with the normal dungeon
-  view in the terminal. To be concise, the path maps only display the right most
-  digit of the path value. The path maps also display the player character by
-  convention as '@'.
-
+  This implementation fell short of the specifications. There are serveral large
+  bugs that I cannot pinpoint the cause of. I believe one is with the collision
+  detection on the monsters. The other is with inserting the nodes back into the
+  cue after using them. However, I'm not sure how to pinpoint that those are truly
+  the sources of the bugs. Sometimes a few of the monsters will be able to make
+  there way all the way to the PC and defeat him and then other times they will all
+  just stop moving for seemingly no reason. I have already sank too much time into
+  this assignment so it will be submitted with full knowledge of these bugs.
+  
 Author
   Weston Berg (weberg@iastate.edu)
 
 Date
-  September 26th, 2018
+  October 2nd, 2018

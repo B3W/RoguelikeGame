@@ -1,5 +1,5 @@
 #include "heap.h"
-#include "../macros.h"
+#include "macros.h"
 
 #undef min
 
