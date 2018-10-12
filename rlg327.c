@@ -75,14 +75,105 @@ void usage(char *name)
   exit(-1);
 }
 
+
+/*
+ * Initialize ncurses for the terminal
+ */
 void init_io(void)
 {
-  initscr();      // Initialize terminal
-  raw();          // Turn off buffered IO
-  noecho();       // Don't echo input
-  curs_set(0);    // Make cursor invisible
+  initscr();             // Initialize terminal
+  raw();                 // Turn off buffered IO
+  noecho();              // Don't echo input
+  curs_set(0);           // Make cursor invisible
   keypad(stdscr, TRUE);  // Turn on keypad for the terminal
 }
+
+
+/*
+ * Overlay the dungeon with of list of monsters and
+ * their relative position to the PC
+ */
+void display_monster_list(dungeon_t *d)
+{
+  /* New window parameters */
+  uint8_t win_x = 10;
+  uint8_t win_y = 1;
+  uint8_t win_width = DUNGEON_X - (win_x << 1);
+  uint8_t win_height = DUNGEON_Y;
+
+  /* Create buffer containing type and    *
+   * location of monsters in the dungeon  */
+  char buffer[d->num_monsters+2][win_width];
+  sprintf(buffer[0], "%s", "DUNGEON  DOSSIER");
+  sprintf(buffer[1], "Presence of %d monsters detected", d->num_monsters);
+  
+  character_t *tmp_c;
+  char *x_dir, *y_dir;
+  uint8_t line_num = 2;
+  uint8_t i, j;
+  int8_t x_dist, y_dist;
+  for (j = 0; j < DUNGEON_Y; j++) {
+    for (i = 0; i < DUNGEON_X; i++) {
+      tmp_c = d->character[j][i];
+
+      if (tmp_c != NULL && tmp_c != &d->pc && tmp_c->alive) { // Make sure character is not the pc and it is alive
+
+	// Calculate distance to PC
+	x_dist = tmp_c->position[dim_x] - d->pc.position[dim_x];
+	y_dist = d->pc.position[dim_y] - tmp_c->position[dim_y];
+	if (x_dist < 0) {
+	  x_dir = "North";
+	} else {
+	  x_dir = "South";
+	}
+	if (y_dist < 0) {
+	  y_dir = "West";
+	} else {
+	  y_dir = "East";
+	}
+
+	// Write data into buffer
+	sprintf(buffer[line_num], "%c: %d %s, %d %s", tmp_c->symbol, abs(x_dist), x_dir, abs(y_dist), y_dir);
+	line_num++;
+      }
+    }
+  }
+
+  /* Create and display window */
+  WINDOW *monster_win;
+  monster_win = newwin(win_height, win_width, win_y, win_x);
+  keypad(monster_win, TRUE);
+  box(monster_win, 0, 0);
+  // TODO: Print monsters to the window
+  wrefresh(monster_win);
+
+  /* Use wgetch for windows other than stdscr */
+  int mwin_input;
+  uint8_t exit_flag = 0;
+  
+  while (!exit_flag) {
+    mwin_input = wgetch(monster_win);
+    switch(mwin_input)
+      {
+      case KEY_UP:    // Scroll up when needed
+	// TODO: Print monster when needed
+        break;
+
+      case KEY_DOWN:  // Scroll down when needed
+	// TODO: Print monsters when needed
+        break;
+
+      case 27:        // Close window
+	exit_flag = 1;
+      }
+  }
+
+  /* Clear the border then deallocate memory for monster window */
+  wborder(monster_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+  wrefresh(monster_win);
+  delwin(monster_win);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -257,6 +348,10 @@ int main(int argc, char *argv[])
 	  break;
 	  
 	case 109: // Display the monster list
+	  display_monster_list(&d);
+	  
+	  render_dungeon(&d);
+	  refresh();
 	  break;
 
 	default: // Wanting to move character. Check move and act accordingly

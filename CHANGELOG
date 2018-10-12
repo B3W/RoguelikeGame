@@ -90,3 +90,6 @@
 10/09/2018 9:00 AM
 	Adopted Dr. Sheaffer's code up to this assignment as mine had a bug I could not find within the time alloted for the assignment
 
+10/11/2018 9:00 PM
+	Started implementation of a monster list window. Things left to implement are scrolling and printing out the monsters to the window
+
