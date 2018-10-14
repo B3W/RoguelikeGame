@@ -93,3 +93,6 @@
 10/11/2018 9:00 PM
 	Started implementation of a monster list window. Things left to implement are scrolling and printing out the monsters to the window
 
+10/14/2018 4:00 PM
+	Monster list implementation is complete with scrolling
+	Added F1 key for exiting the window to avoid escape key delay

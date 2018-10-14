@@ -91,7 +91,11 @@ void init_io(void)
 
 /*
  * Overlay the dungeon with of list of monsters and
- * their relative position to the PC
+ * their relative position to the PC.
+ *
+ * KEY_DOWN will scroll down if monster list too big
+ * KEY_UP will scroll up to beginning of list
+ * Escape or F1 will close out the list
  */
 void display_monster_list(dungeon_t *d)
 {
@@ -101,69 +105,126 @@ void display_monster_list(dungeon_t *d)
   uint8_t win_width = DUNGEON_X - (win_x << 1);
   uint8_t win_height = DUNGEON_Y;
 
+  /* Create new window */
+  WINDOW *monster_win;
+  monster_win = newwin(win_height, win_width, win_y, win_x);
+  keypad(monster_win, TRUE);
+  box(monster_win, 0, 0);
+  
   /* Create buffer containing type and    *
    * location of monsters in the dungeon  */
-  char buffer[d->num_monsters+2][win_width];
-  sprintf(buffer[0], "%s", "DUNGEON  DOSSIER");
-  sprintf(buffer[1], "Presence of %d monsters detected", d->num_monsters);
+  char buffer[d->num_monsters+4][win_width-2];  // Four lines for title, monster count, and escape directions; 2 bytes x direction for border
+  sprintf(buffer[0], "%s", "DUNGEON DOSSIER");
+  mvwprintw(monster_win, 0, 1, "%s", buffer[0]);  // mvwprintw(WINDOW, y, x, Format, args)
+  sprintf(buffer[1], "Presence of %d monsters detected!", d->num_monsters);
+  mvwprintw(monster_win, 1, 1, "%s", buffer[1]);
   
   character_t *tmp_c;
   char *x_dir, *y_dir;
   uint8_t line_num = 2;
+  uint8_t max_print_height = win_height - 1;
   uint8_t i, j;
   int8_t x_dist, y_dist;
   for (j = 0; j < DUNGEON_Y; j++) {
     for (i = 0; i < DUNGEON_X; i++) {
       tmp_c = d->character[j][i];
 
-      if (tmp_c != NULL && tmp_c != &d->pc && tmp_c->alive) { // Make sure character is not the pc and it is alive
+      // Make sure character is not the pc and it is alive (alive check may not be necessary)
+      if (tmp_c != NULL && tmp_c != &d->pc && tmp_c->alive) {
 
 	// Calculate distance to PC
 	x_dist = tmp_c->position[dim_x] - d->pc.position[dim_x];
 	y_dist = d->pc.position[dim_y] - tmp_c->position[dim_y];
 	if (x_dist < 0) {
-	  x_dir = "North";
+	  x_dir = "West";
 	} else {
-	  x_dir = "South";
+	  x_dir = "East";
 	}
 	if (y_dist < 0) {
-	  y_dir = "West";
+	  y_dir = "South";
 	} else {
-	  y_dir = "East";
+	  y_dir = "North";
 	}
 
-	// Write data into buffer
+	// Write data into buffer and print onto the window if room available
 	sprintf(buffer[line_num], "%c: %d %s, %d %s", tmp_c->symbol, abs(x_dist), x_dir, abs(y_dist), y_dir);
+	if (line_num < max_print_height) {
+	  mvwprintw(monster_win, line_num, 1, "%s", buffer[line_num]);
+	}
 	line_num++;
       }
     }
   }
+  sprintf(buffer[line_num], "%s", " ");
+  if (line_num < max_print_height) {
+    mvwprintw(monster_win, line_num, 1, "%s", buffer[line_num]);
+  }
+  line_num++;
+  sprintf(buffer[line_num], "%s", "Press ESCAPE or F1 to Continue Quest!");
+  if (line_num < max_print_height) {
+    mvwprintw(monster_win, line_num, 1, "%s", buffer[line_num]);
+  }
 
-  /* Create and display window */
-  WINDOW *monster_win;
-  monster_win = newwin(win_height, win_width, win_y, win_x);
-  keypad(monster_win, TRUE);
-  box(monster_win, 0, 0);
-  // TODO: Print monsters to the window
+  /* Display window */
   wrefresh(monster_win);
 
-  /* Use wgetch for windows other than stdscr */
+  /* Use wgetch for input for windows other than stdscr */
   int mwin_input;
   uint8_t exit_flag = 0;
+  uint8_t curLine;
+  uint8_t buffer_frame_start = 1;
+  uint8_t buffer_frame_end = (line_num < max_print_height) ? line_num : max_print_height-1; 
   
   while (!exit_flag) {
     mwin_input = wgetch(monster_win);
     switch(mwin_input)
       {
       case KEY_UP:    // Scroll up when needed
-	// TODO: Print monster when needed
-        break;
+	if (buffer_frame_start != 1) {
+	  // Clear window
+	  wclear(monster_win);
+	  // Increment the frame
+	  buffer_frame_start--;
+	  buffer_frame_end--;
+	  curLine = buffer_frame_start;
+	  for (j = 1; j < max_print_height; j++) {
+	    // Print buffer
+	    mvwprintw(monster_win, j, 1, "%s", buffer[curLine]);
+	    curLine++;
+	  }
+	  // Restore border
+	  box(monster_win, 0, 0);
+	  // Restore title
+	  mvwprintw(monster_win, 0, 1, "%s", buffer[0]);
+
+	  wrefresh(monster_win);
+	}
+	break;
 
       case KEY_DOWN:  // Scroll down when needed
-	// TODO: Print monsters when needed
+	if (buffer_frame_end != line_num) {
+	  // Clear window
+	  wclear(monster_win);
+	  // Increment the frame
+	  buffer_frame_start++;
+	  buffer_frame_end++;
+	  curLine = buffer_frame_start;
+	  for (j = 1; j < max_print_height; j++) {
+	    // Print buffer
+	    mvwprintw(monster_win, j, 1, "%s", buffer[curLine]);
+	    curLine++;
+	  }
+	  // Restore border
+	  box(monster_win, 0, 0);
+	  // Restore title
+	  mvwprintw(monster_win, 0, 1, "%s", buffer[0]);
+
+	  wrefresh(monster_win);
+	}
         break;
 
-      case 27:        // Close window
+      case 27:  // Close window
+      case KEY_F(1):
 	exit_flag = 1;
       }
   }

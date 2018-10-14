@@ -1,7 +1,11 @@
 Rougelike Dungeon with User Input
-  The purpose of this program is to procedurally generate a randomized dungeon
-  levels. This dungeon will be utilized for displaying rooms, corridors, enemies,
-  and items to the player (some of those things have yet to be implemented). The
+  The purpose of this program is to procedurally generate randomized dungeon
+  levels. This dungeon contains rooms, corridors, and monsters. Monsters have
+  randomized attributes that consist of intelligence, telepathy, tunneling and
+  erratic. Intelligent monsters use a shortest path to the player, telepathic
+  monsters always know the location of the player, tunneling monsters are able
+  to tunnel through rock, and erratic monsters have a chance of moving randomly.
+  Monsters can have none, all, or some combination of these attributes. The
   player can progress through levels via the stairs located within the dungeon.
 
   Additional Features of the progeam:
@@ -12,20 +16,15 @@ Rougelike Dungeon with User Input
     '.' - Denotes room
     '#' - Denotes corridor
     '@' - Denotes player
+    '<' - Denotes stair case going up
+    '>' - Denotes stair case going down
     '0', '1', ... , 'e', 'f' - Denote monsters of various attributes
 
 Implementation
-  This implementation fell short of the specifications. There are serveral large
-  bugs that I cannot pinpoint the cause of. I believe one is with the collision
-  detection on the monsters. The other is with inserting the nodes back into the
-  cue after using them. However, I'm not sure how to pinpoint that those are truly
-  the sources of the bugs. Sometimes a few of the monsters will be able to make
-  there way all the way to the PC and defeat him and then other times they will all
-  just stop moving for seemingly no reason. I have already sank too much time into
-  this assignment so it will be submitted with full knowledge of these bugs.
   
+
 Author
   Weston Berg (weberg@iastate.edu)
 
 Date
-  October 2nd, 2018
+  October 14th, 2018
