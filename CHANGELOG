@@ -107,3 +107,7 @@
 	Added messages for trying to use staircase when staircase is not there or for using the wrong staircase
 	Changed the message for unbounded keys
 
+10/16/2018 2:00 PM
+	Moved ncurses initialization to main
+	Removed init_io function
+
