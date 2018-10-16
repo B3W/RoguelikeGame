@@ -78,19 +78,6 @@ void usage(char *name)
 
 
 /*
- * Initialize ncurses for the terminal
- */
-void init_io(void)
-{
-  initscr();             // Initialize terminal
-  raw();                 // Turn off buffered IO
-  noecho();              // Don't echo input
-  curs_set(0);           // Make cursor invisible
-  keypad(stdscr, TRUE);  // Turn on keypad for the terminal
-}
-
-
-/*
  * Overlay the dungeon with of list of monsters and
  * their relative position to the PC.
  *
@@ -363,7 +350,12 @@ int main(int argc, char *argv[])
   srand(seed);
 
   /* Configure terminal for user input */
-  init_io();
+  initscr();             // Initialize terminal
+  raw();                 // Turn off buffered IO
+  noecho();              // Don't echo input
+  curs_set(0);           // Make cursor invisible
+  keypad(stdscr, TRUE);  // Turn on keypad for the terminal
+
 
   int user_input;
   int invalid_op;
