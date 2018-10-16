@@ -10,8 +10,29 @@ Rougelike Dungeon with User Input
 
   Additional Features of the progeam:
     - Pathing via Dijkstra's Algoritm for creatures to find the player character
+    - Status updates based on user input
 
-  Within the dungeon, the meaning of currently diplayed characters is as follows:
+  Key Mappings:
+    7, y, KEY_HOME - Attempt to move PC one cell to the upper left
+    8, k, KEY_UP - Attempt to move PC one cell up
+    9, u, KEY_PPAGE - Attempt to move PC one cell to the upper right
+    6, l, KEY_RIGHT - Attempt to move PC one cell right
+    3, n, KEY_NPAGE - Attempt to move PC one cell to the lower right
+    2, j, KEY_DOWN - Attempt to move PC one cell down
+    1, b, KEY_END - Attempt to move PC one cell to the lower left
+    4, h, KEY_LEFT - Attempt to move PC one cell left
+    5, ., space, KEY_B2, - Rest for one turn
+    
+    > - Attempt to move down a staircase to the next dungeon level
+    < - Attempt to move up a staircase to the next dungeon level
+    
+    m - Display the monster list (doesn't count as a PC turn)
+      KEY_UP - Scroll monster list up when needed
+      KEY_DOWN - Scroll monster list down when needed
+      Escape, F1 - Close monster list and return to character control
+    Q - Quit the game
+    
+  Within the dungeon, meaning of currently diplayed characters is as follows:
     ' ' - Denotes rock
     '.' - Denotes room
     '#' - Denotes corridor
@@ -21,7 +42,18 @@ Rougelike Dungeon with User Input
     '0', '1', ... , 'e', 'f' - Denote monsters of various attributes
 
 Implementation
-  
+  This implementation succeeds in meeting all of the required specifications.
+  The user can now move around the PC and take staircases to new dungeons.
+  Dungeons are not connected and each staircase taken will place the PC in
+  a completely new dungeon. A new portion in main of rlg327.c handles the
+  user input. check_move in move.c verifies PC movement. display_monster_list
+  in rlg327.c does all of the work of showing the monster list. display_message
+  in utils.c displays statuses above the dungeon.
+
+NOTE
+  If using PuTTY, navigate to Connection -> Data and make sure 'Terminal-type
+  string' is putty. There has also been some weird keypad behavior with the
+  keypad when using PuTTY.
 
 Author
   Weston Berg (weberg@iastate.edu)
