@@ -424,10 +424,10 @@ int main(int argc, char *argv[])
 	      delete_dungeon(&d);
 	      goto NEW_DUNGEON;
 	    } else {
-	      display_message("Ravenous sounds eminate from below. Up not an option here...");
+	      display_message("Ravenous sounds eminate from below. Up not an option here..");
 	    }
 	  } else {
-	    display_message("Hmmm, no way up from here.");
+	    display_message("Hmmm, no way up from here..");
 	  }
 	  break;
 	  
@@ -441,10 +441,10 @@ int main(int argc, char *argv[])
 	      delete_dungeon(&d);
 	      goto NEW_DUNGEON;
 	    } else {
-	      display_message("Stairs appear to go up. Unless I'm on the ceiling. Hmm...");
+	      display_message("Stairs appear to go up. Unless I'm on the ceiling. Hmm..");
 	    }
 	  } else {
-	    display_message("Ground seems firm. No staircase here.");
+	    display_message("Ground seems firm. No staircase here");
 	  }
 	  break;
 	  

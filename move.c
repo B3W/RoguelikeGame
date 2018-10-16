@@ -206,7 +206,7 @@ uint8_t check_move(dungeon_t *d, int input, pair_t next_move)
   next_move[dim_x] = d->pc.position[dim_x] + dir[dim_x];
   
   if (mappair(next_move) < ter_floor) {
-    display_message("PC bangs head on wall...");
+    display_message("PC bangs head on wall..");
     return 1;
   }
 
