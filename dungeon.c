@@ -579,6 +579,54 @@ int gen_dungeon(dungeon_t *d)
   return 0;
 }
 
+/*
+ * Places between 1 and 2 up and down staircases within the
+ * dungeon. Only the PC can use staircases. '<' denotes
+ * an up staircase and '>' denotes a down staircase 
+ *
+ * @param *d  Pointer to dungeon struct
+ */
+void place_stairs(dungeon_t *d)
+{
+  uint8_t up_num = rand_range(1, 2);
+  uint8_t down_num = rand_range(1, 2);
+  uint8_t room_index, valid_location, x, y, i;
+
+  for (i = 0; i < up_num; i++) { // Place up staircases
+    valid_location = 0;
+    while (!valid_location) {
+      room_index = rand_range(0, d->num_rooms - 1);
+      x = rand_range(d->rooms[room_index].position[dim_x],
+		     (d->rooms[room_index].position[dim_x] + d->rooms[room_index].size[dim_x] - 1));
+      
+      y = rand_range(d->rooms[room_index].position[dim_y],
+		     (d->rooms[room_index].position[dim_y] + d->rooms[room_index].size[dim_y] - 1));
+
+      if (mapxy(x, y) < ter_stair) {
+	mapxy(x, y) = ter_stair_up;
+	valid_location = 1;
+      }
+    }
+  }
+  
+  for (i = 0; i < down_num; i++) { // Place down staircases
+    valid_location = 0;
+    while (!valid_location) {
+      room_index = rand_range(0, d->num_rooms - 1);
+      x = rand_range(d->rooms[room_index].position[dim_x],
+		     (d->rooms[room_index].position[dim_x] + d->rooms[room_index].size[dim_x] - 1));
+      
+      y = rand_range(d->rooms[room_index].position[dim_y],
+		     (d->rooms[room_index].position[dim_y] + d->rooms[room_index].size[dim_y] - 1));
+
+      if (mapxy(x, y) < ter_stair) {
+	mapxy(x, y) = ter_stair_down;
+	valid_location = 1;
+      }
+    }
+  }
+}
+
 void render_dungeon(dungeon_t *d){
   pair_t p;
   uint16_t y;
@@ -601,6 +649,13 @@ void render_dungeon(dungeon_t *d){
         case ter_floor_hall:
           mvaddch(y, p[dim_x], '#');
           break;
+	case ter_stair:
+	case ter_stair_up:
+	  mvaddch(y, p[dim_x], '<');
+	  break;
+	case ter_stair_down:
+	  mvaddch(y, p[dim_x], '>');
+	  break;
         case ter_debug:
           mvaddch(y, p[dim_x], '*');
           fprintf(stderr, "Debug character at %d, %d\n", p[dim_y], p[dim_x]);
@@ -1040,6 +1095,9 @@ void render_distance_map(dungeon_t *d)
         case ter_floor:
         case ter_floor_room:
         case ter_floor_hall:
+	case ter_stair:
+	case ter_stair_up:
+	case ter_stair_down:
           /* Placing X for infinity */
           if (d->pc_distance[p[dim_y]][p[dim_x]] == UCHAR_MAX) {
             putchar('X');
@@ -1076,6 +1134,9 @@ void render_tunnel_distance_map(dungeon_t *d)
         case ter_floor:
         case ter_floor_room:
         case ter_floor_hall:
+	case ter_stair:
+	case ter_stair_up:
+	case ter_stair_down:
           /* Placing X for infinity */
           if (d->pc_tunnel[p[dim_y]][p[dim_x]] == UCHAR_MAX) {
             putchar('X');

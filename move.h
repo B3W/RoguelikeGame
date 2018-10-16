@@ -14,8 +14,6 @@ void next_move(dungeon_t *d,
                pair_t next_pos);
 void do_moves(dungeon_t *d);
 uint8_t check_move(dungeon_t *d, int input, pair_t next_move);
-void clear_status(void);
-void display_key_error(char *str);
 void dir_nearest_wall(dungeon_t *d, character_t *c, pair_t dir);
 uint32_t in_corner(dungeon_t *d, character_t *c);
 uint32_t against_wall(dungeon_t *d, character_t *c);

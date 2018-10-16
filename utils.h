@@ -9,6 +9,8 @@
 /* Returns random integer in [min, max]. */
 # define rand_range(min, max) ((rand() % (((max) + 1) - (min))) + (min))
 
+void clear_status(void);
+void display_message(char *);
 int makedirectory(char *dir);
 
 #endif

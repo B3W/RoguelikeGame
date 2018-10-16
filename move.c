@@ -1,7 +1,6 @@
 #include "move.h"
 
 #include <ncurses.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -44,11 +43,21 @@ void move_character(dungeon_t *d, character_t *c, pair_t next)
   temp[dim_x] = c->position[dim_x];
 
   /* Make sure to offset Y coord by 1 */
-  if (mappair(temp) == ter_floor_room) {
-    mvaddch(temp[dim_y]+1, temp[dim_x], '.');
-  } else {
-    mvaddch(temp[dim_y]+1, temp[dim_x], '#');
-  }
+  switch (mappair(temp))
+    {
+    case ter_floor_room:
+      mvaddch(temp[dim_y]+1, temp[dim_x], '.');
+      break;
+    case ter_stair_up:
+      mvaddch(temp[dim_y]+1, temp[dim_x], '<');
+      break;
+    case ter_stair_down:
+      mvaddch(temp[dim_y]+1, temp[dim_x], '>');
+      break;
+    default:
+      mvaddch(temp[dim_y]+1, temp[dim_x], '#');
+      break;
+    }
   
   c->position[dim_y] = next[dim_y];
   c->position[dim_x] = next[dim_x];
@@ -114,10 +123,6 @@ void do_moves(dungeon_t *d)
 
 uint8_t check_move(dungeon_t *d, int input, pair_t next_move)
 {
-  if (mvinch(0, 0) != ' ') {
-    clear_status();
-  }
-
   pair_t dir;
   dir[dim_y] = dir[dim_x] = 0;
 
@@ -190,7 +195,7 @@ uint8_t check_move(dungeon_t *d, int input, pair_t next_move)
       
     // Key not recognized so no-op
     default:
-      display_key_error("Unreconized Key");
+      display_message("Unreconized Key");
       return 1;
     }
 
@@ -198,43 +203,11 @@ uint8_t check_move(dungeon_t *d, int input, pair_t next_move)
   next_move[dim_x] = d->pc.position[dim_x] + dir[dim_x];
   
   if (mappair(next_move) < ter_floor) {
-    display_key_error("PC bangs head on wall...");
+    display_message("PC bangs head on wall...");
     return 1;
   }
 
   return 0;
-}
-
-void clear_status()
-{
-  uint16_t i;
-  
-  for (i = 0; i < DUNGEON_X; i++) {
-    mvaddch(0, i, ' ');
-  }
-  refresh();
-}
-
-void display_key_error(char *str)
-{
-  uint8_t null_byte = 0;
-  uint16_t i;
-  
-  for (i = 0; i < DUNGEON_X; i++) {
-    if (null_byte) {
-      mvaddch(0, i, ' ');
-    } else {
-      if (*str == 0) {
-	null_byte = 1;
-	mvaddch(0, i, '.');
-      } else {
-	mvaddch(0, i, *str);
-      }
-    }
-    refresh();
-    usleep(1000);
-    str++;
-  }
 }
 
 void dir_nearest_wall(dungeon_t *d, character_t *c, pair_t dir)

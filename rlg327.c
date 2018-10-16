@@ -11,6 +11,7 @@
 #include "pc.h"
 #include "npc.h"
 #include "move.h"
+#include "utils.h"
 
 const char *victory =
   "\n                                       o\n"
@@ -360,7 +361,20 @@ int main(int argc, char *argv[])
   }
 
   srand(seed);
+
+  /* Configure terminal for user input */
+  init_io();
+
+  int user_input;
+  int invalid_op;
+  pair_t pc_move;
+
+  ///////// TODO SAVE KILL COUNT ACCROSS DUNGEON INSTANCES \\\\\\\\
   
+ NEW_DUNGEON:
+  clear();
+
+  /* Begin Dungeon Generation */
   init_dungeon(&d);
 
   if (do_load) {
@@ -371,19 +385,11 @@ int main(int argc, char *argv[])
     gen_dungeon(&d);
   }
 
-  /* Configure terminal for user input */
-  init_io();
-
-  clear();
-
   /* Ignoring PC position in saved dungeons.  Not a bug. */
   config_pc(&d);
   gen_monsters(&d);
-
-  int user_input;
-  int invalid_op;
-  pair_t pc_move;
-
+  place_stairs(&d);
+  
   render_dungeon(&d);  // Place the dungeon and monsters with status bar on top into terminal
   do_moves(&d);        // Place PC in starting position of event queue
   refresh();           // Show the dungeon
@@ -396,6 +402,10 @@ int main(int argc, char *argv[])
 
       /* Get user input */
       user_input = getch();
+
+      if (mvinch(0, 0) != ' ') {
+	clear_status();
+      }
       
       switch(user_input)
 	{
@@ -403,14 +413,31 @@ int main(int argc, char *argv[])
 	  goto EXIT;
 	  
 	case 60: // Go up '<' ladder if possible
+	  if (d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] >= ter_stair) {
+	    if (d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] == ter_stair_up) {
+	      pc_delete(d.pc.pc);
+	      delete_dungeon(&d);
+	      goto NEW_DUNGEON;
+	    }
+	  } else {
+	    display_message("Ground seems firm. No staircase here.");
+	  }
 	  break;
 	  
 	case 62: // Go down '>' ladder if possible
+	  if (d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] >= ter_stair) {
+	    if(d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] == ter_stair_down) {
+	      pc_delete(d.pc.pc);
+	      delete_dungeon(&d);
+	      goto NEW_DUNGEON;
+	    }
+	  } else {
+	    display_message("Hmmm, no way up from here.");
+	  }
 	  break;
 	  
 	case 109: // Display the monster list
-	  display_monster_list(&d);
-	  
+	  display_monster_list(&d);	  
 	  render_dungeon(&d);
 	  refresh();
 	  break;
