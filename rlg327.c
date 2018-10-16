@@ -387,6 +387,8 @@ int main(int argc, char *argv[])
 
   /* Ignoring PC position in saved dungeons.  Not a bug. */
   config_pc(&d);
+  d.pc.kills[kill_direct] = direct_kills;
+  d.pc.kills[kill_avenged] = avenged_kills;
   gen_monsters(&d);
   place_stairs(&d);
   
@@ -410,15 +412,13 @@ int main(int argc, char *argv[])
       switch(user_input)
 	{
 	case 81: // Quit game
-	  direct_kills += d.pc.kills[kill_direct];
-	  avenged_kills += d.pc.kills[kill_avenged];
 	  goto EXIT;
 	  
 	case 60: // Go up '<' ladder if possible
 	  if (d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] >= ter_stair) {
 	    if (d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] == ter_stair_up) {
-	      direct_kills += d.pc.kills[kill_direct];
-	      avenged_kills += d.pc.kills[kill_avenged];
+	      direct_kills = d.pc.kills[kill_direct];
+	      avenged_kills = d.pc.kills[kill_avenged];
 
 	      pc_delete(d.pc.pc);
 	      delete_dungeon(&d);
@@ -434,8 +434,8 @@ int main(int argc, char *argv[])
 	case 62: // Go down '>' ladder if possible
 	  if (d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] >= ter_stair) {
 	    if(d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] == ter_stair_down) {
-	      direct_kills += d.pc.kills[kill_direct];
-	      avenged_kills += d.pc.kills[kill_avenged];
+	      direct_kills = d.pc.kills[kill_direct];
+	      avenged_kills = d.pc.kills[kill_avenged];
 
 	      pc_delete(d.pc.pc);
 	      delete_dungeon(&d);
@@ -495,7 +495,7 @@ int main(int argc, char *argv[])
   clear();
   printw("%s\nYou defended your life in the face of %u deadly beasts.\n"
          "You avenged the cruel and untimely murders of %u "
-         "peaceful dungeon residents.\n", pc_is_alive(&d) ? victory : tombstone, direct_kills, avenged_kills);
+         "peaceful dungeon residents.\n", pc_is_alive(&d) ? victory : tombstone, d.pc.kills[kill_direct], d.pc.kills[kill_avenged]);
 
   refresh();
   getch();
