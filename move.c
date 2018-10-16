@@ -189,8 +189,9 @@ uint8_t check_move(dungeon_t *d, int input, pair_t next_move)
       dir[dim_x] = -1;
       break;
 
-    // Rest for a turn (5 or space)
+    // Rest for a turn (5, ., space)
     case 53:
+    case 46:
     case 32:
       break;
       
