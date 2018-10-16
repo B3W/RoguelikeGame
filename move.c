@@ -124,6 +124,7 @@ void do_moves(dungeon_t *d)
 uint8_t check_move(dungeon_t *d, int input, pair_t next_move)
 {
   pair_t dir;
+  char message[] = "  is not bound";
   dir[dim_y] = dir[dim_x] = 0;
 
   switch(input)
@@ -195,7 +196,8 @@ uint8_t check_move(dungeon_t *d, int input, pair_t next_move)
       
     // Key not recognized so no-op
     default:
-      display_message("Unreconized Key");
+      message[0] = input;
+      display_message(message);
       return 1;
     }
 

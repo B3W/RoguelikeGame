@@ -368,8 +368,8 @@ int main(int argc, char *argv[])
   int user_input;
   int invalid_op;
   pair_t pc_move;
-
-  ///////// TODO SAVE KILL COUNT ACCROSS DUNGEON INSTANCES \\\\\\\\
+  uint32_t direct_kills, avenged_kills;
+  direct_kills = avenged_kills = 0;
   
  NEW_DUNGEON:
   clear();
@@ -410,29 +410,41 @@ int main(int argc, char *argv[])
       switch(user_input)
 	{
 	case 81: // Quit game
+	  direct_kills += d.pc.kills[kill_direct];
+	  avenged_kills += d.pc.kills[kill_avenged];
 	  goto EXIT;
 	  
 	case 60: // Go up '<' ladder if possible
 	  if (d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] >= ter_stair) {
 	    if (d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] == ter_stair_up) {
+	      direct_kills += d.pc.kills[kill_direct];
+	      avenged_kills += d.pc.kills[kill_avenged];
+
 	      pc_delete(d.pc.pc);
 	      delete_dungeon(&d);
 	      goto NEW_DUNGEON;
+	    } else {
+	      display_message("Ravenous sounds eminate from below. Up not an option here...");
 	    }
 	  } else {
-	    display_message("Ground seems firm. No staircase here.");
+	    display_message("Hmmm, no way up from here.");
 	  }
 	  break;
 	  
 	case 62: // Go down '>' ladder if possible
 	  if (d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] >= ter_stair) {
 	    if(d.map[d.pc.position[dim_y]][d.pc.position[dim_x]] == ter_stair_down) {
+	      direct_kills += d.pc.kills[kill_direct];
+	      avenged_kills += d.pc.kills[kill_avenged];
+
 	      pc_delete(d.pc.pc);
 	      delete_dungeon(&d);
 	      goto NEW_DUNGEON;
+	    } else {
+	      display_message("Stairs appear to go up. Unless I'm on the ceiling. Hmm...");
 	    }
 	  } else {
-	    display_message("Hmmm, no way up from here.");
+	    display_message("Ground seems firm. No staircase here.");
 	  }
 	  break;
 	  
@@ -483,7 +495,7 @@ int main(int argc, char *argv[])
   clear();
   printw("%s\nYou defended your life in the face of %u deadly beasts.\n"
          "You avenged the cruel and untimely murders of %u "
-         "peaceful dungeon residents.\n", pc_is_alive(&d) ? victory : tombstone, d.pc.kills[kill_direct], d.pc.kills[kill_avenged]);
+         "peaceful dungeon residents.\n", pc_is_alive(&d) ? victory : tombstone, direct_kills, avenged_kills);
 
   refresh();
   getch();
