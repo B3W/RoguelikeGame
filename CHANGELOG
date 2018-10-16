@@ -96,3 +96,9 @@
 10/14/2018 4:00 PM
 	Monster list implementation is complete with scrolling
 	Added F1 key for exiting the window to avoid escape key delay
+
+10/14/2018 7:15 PM
+	Implemented staircases and movement between dungeons
+	Moved display_key_error (now display_message) and clear_status from move.c to utils.c for easier access by other files
+	Removed unistd.h include from move.c
+
