@@ -102,3 +102,8 @@
 	Moved display_key_error (now display_message) and clear_status from move.c to utils.c for easier access by other files
 	Removed unistd.h include from move.c
 
+10/16/2018 12:00 PM
+	Added tracking of PC kills accross dungeons
+	Added messages for trying to use staircase when staircase is not there or for using the wrong staircase
+	Changed the message for unbounded keys
+
