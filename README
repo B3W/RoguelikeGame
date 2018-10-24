@@ -30,6 +30,9 @@ Rougelike Dungeon with User Input
       KEY_UP - Scroll monster list up when needed
       KEY_DOWN - Scroll monster list down when needed
       Escape, F1 - Close monster list and return to character control
+    T - Display the tunneling distance map
+    
+    s - Display the normal game dungeon
     Q - Quit the game
     
   Within the dungeon, meaning of currently diplayed characters is as follows:

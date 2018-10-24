@@ -111,3 +111,11 @@
 	Moved ncurses initialization to main
 	Removed init_io function
 
+10/23/2018 11:00 PM
+	Adopted Dr. Sheaffer's solution to last assignment
+	Porting to C++
+	  Changed .c to .cpp
+	  Changed Makefile to compile with g++
+	  Changing structs to classes
+	  Casted void pointers to pointer of appropriate type
+
