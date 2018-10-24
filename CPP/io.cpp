@@ -170,6 +170,19 @@ static int compare_monster_distance(const void *v1, const void *v2)
           dungeon_ptr->pc_distance[(*c2)->position[dim_y]][(*c2)->position[dim_x]]);
 }
 
+uint8_t outside_light(dungeon *d, character *c)
+{
+  int32_t x_dist, y_dist;
+
+  x_dist = abs(d->pc.position[dim_x] - c->position[dim_x]);
+  y_dist = abs(d->pc.position[dim_y] - c->position[dim_y]);
+
+  if ((0 <= x_dist && x_dist <= LIGHT_RADIUS) && (0 <= y_dist && y_dist <= LIGHT_RADIUS)) {
+    return 0;
+  }
+  return 1;      
+}
+
 static character *io_nearest_visible_monster(dungeon *d)
 {
   character **c, *n;
@@ -191,7 +204,8 @@ static character *io_nearest_visible_monster(dungeon *d)
   qsort(c, count, sizeof (*c), compare_monster_distance);
 
   for (n = NULL, i = 0; i < count; i++) {
-    if (can_see(d, &d->pc, c[i])) {
+    //if (can_see(d, &d->pc, c[i])) {
+    if (!outside_light(d, c[i])) {
       n = c[i];
       break;
     }
@@ -200,19 +214,6 @@ static character *io_nearest_visible_monster(dungeon *d)
   free(c);
 
   return n;
-}
-
-uint8_t outside_light(dungeon *d, character *c)
-{
-  int32_t x_dist, y_dist;
-
-  x_dist = abs(d->pc.position[dim_x] - c->position[dim_x]);
-  y_dist = abs(d->pc.position[dim_y] - c->position[dim_y]);
-
-  if ((0 <= x_dist && x_dist <= LIGHT_RADIUS) && (0 <= y_dist && y_dist <= LIGHT_RADIUS)) {
-    return 0;
-  }
-  return 1;      
 }
 
 void io_display(dungeon *d)
@@ -333,13 +334,83 @@ void io_display_monster_list(dungeon *d)
 uint32_t io_teleport_pc(dungeon *d)
 {
   /* Just for fun. */
+  uint8_t prev_fog_flag = fog_flag;
+  fog_flag = 0;
+  io_display(d);
+  
   pair_t dest;
+  int key;
+  uint8_t teleporting = 1;
 
+  dest[dim_x] = d->pc.position[dim_x];
+  dest[dim_y] = d->pc.position[dim_y];
+
+  /* TODO: ADD CHECKING FOR TELEPORTING PLAYER OUT OF BOUNDS OR ONTO OTHER CHARACTERS */
   do {
-    dest[dim_x] = rand_range(1, DUNGEON_X - 2);
-    dest[dim_y] = rand_range(1, DUNGEON_Y - 2);
-  } while (charpair(dest));
-
+    switch (key = getch())
+      {
+      case '7':
+      case 'y':
+      case KEY_HOME: 
+	dest[dim_x]--;
+	dest[dim_y]--;
+	break;
+      case '8':
+      case 'k':
+      case KEY_UP:
+	dest[dim_y]--;
+	break;
+      case '9':
+      case 'u':
+      case KEY_PPAGE:
+	dest[dim_x]++;
+	dest[dim_y]--;
+	break;
+      case '6':
+      case 'l':
+      case KEY_RIGHT:
+	dest[dim_x]++;
+	break;
+      case '3':
+      case 'n':
+      case KEY_NPAGE:
+	dest[dim_x]++;
+	dest[dim_y]++;
+	break;
+      case '2':
+      case 'j':
+      case KEY_DOWN:
+	dest[dim_y]++;
+      break;
+      case '1':
+      case 'b':
+      case KEY_END:
+	dest[dim_x]--;
+	dest[dim_y]++;
+	break;
+      case '4':
+      case 'h':
+      case KEY_LEFT:
+	dest[dim_x]--;
+	break;
+      case 'r':
+	do {
+	  dest[dim_x] = rand_range(1, DUNGEON_X - 2);
+	  dest[dim_y] = rand_range(1, DUNGEON_Y - 2);
+	} while (charpair(dest));
+	teleporting = 0;
+	break;
+      case 'g':
+	teleporting = 0;
+	break;
+      default:
+	/* Don't need to redraw dungeon when unbound key hit */
+	continue;
+      }
+    io_display(d);
+    mvaddch(dest[dim_y] + 1, dest[dim_x], '*');
+  } while (teleporting);
+  
   d->character_arr[d->pc.position[dim_y]][d->pc.position[dim_x]] = NULL;
   d->character_arr[dest[dim_y]][dest[dim_x]] = &d->pc;
 
@@ -353,6 +424,9 @@ uint32_t io_teleport_pc(dungeon *d)
   dijkstra(d);
   dijkstra_tunnel(d);
 
+  fog_flag = prev_fog_flag;
+  io_display(d);
+  
   return 0;
 }
 /* Adjectives to describe our monsters */
