@@ -6,8 +6,8 @@
 # include "dims.h"
 
 class dungeon;
-typedef struct npc npc_t;
-typedef struct pc pc_t;
+class non_player;
+class player;
 
 typedef enum kill_type {
   kill_direct,
@@ -29,8 +29,8 @@ public:
    * metadata: locally, how old is this character; and globally, how many   *
    * characters have been created by the game.                              */
   uint32_t sequence_number;
-  npc_t *npc;
-  pc_t *pc;
+  non_player *npc;
+  player *pc;
   uint32_t kills[num_kill_types];
 };
 

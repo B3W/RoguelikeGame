@@ -2,13 +2,15 @@
 
 #include "string.h"
 
-#include "dungeon.h"
+#include "character.h"
 #include "pc.h"
 #include "utils.h"
 #include "move.h"
 #include "path.h"
 
-void pc_delete(pc_t *pc)
+#define LIGHT_RADIUS 3
+
+void pc_delete(player *pc)
 {
   if (pc) {
     free(pc);
@@ -30,6 +32,41 @@ void place_pc(dungeon *d)
                                       d->rooms->size[dim_x] - 1));
 }
 
+void update_player_map(dungeon *d)
+{
+  int32_t i, j, x, y;
+
+  i = d->pc.position[dim_x] - LIGHT_RADIUS;
+  if (i < 0) {
+    i = 0;
+  }
+  j = d->pc.position[dim_y] - LIGHT_RADIUS;
+  if (j < 0) {
+    j = 0;
+  }
+  
+  for (y = j; y <= (d->pc.position[dim_y] + LIGHT_RADIUS); y++) {
+    for (x = i; x <= (d->pc.position[dim_x] + LIGHT_RADIUS); x++) {
+      if (d->map[y][x] >= ter_floor) {
+	d->pc.pc->player_map[y][x] = d->map[y][x];
+      }
+    }
+  }
+}
+
+void config_player_map(dungeon *d)
+{
+  int32_t i, j;
+
+  for (j = 0; j < DUNGEON_Y; j++) {
+    for (i = 0; i < DUNGEON_X; i++) {
+      d->pc.pc->player_map[j][i] = ter_wall;
+    }
+  }
+
+  update_player_map(d);
+}
+
 void config_pc(dungeon *d)
 {
   memset(&d->pc, 0, sizeof (d->pc));
@@ -40,10 +77,12 @@ void config_pc(dungeon *d)
   d->pc.speed = PC_SPEED;
   d->pc.alive = 1;
   d->pc.sequence_number = 0;
-  d->pc.pc = (pc_t *) calloc(1, sizeof (*d->pc.pc));
+  d->pc.pc = (player *) calloc(1, sizeof (*d->pc.pc));  
   d->pc.npc = NULL;
   d->pc.kills[kill_direct] = d->pc.kills[kill_avenged] = 0;
 
+  config_player_map(d);
+  
   d->character_arr[d->pc.position[dim_y]][d->pc.position[dim_x]] = &d->pc;
 
   dijkstra(d);

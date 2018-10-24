@@ -116,6 +116,12 @@
 	Porting to C++
 	  Changed .c to .cpp
 	  Changed Makefile to compile with g++
-	  Changing structs to classes
+	  Changed structs to classes
 	  Casted void pointers to pointer of appropriate type
+
+10/24/2018 12:00 PM
+	Implemented player sight radius and dungeon memory
+	Changing light to not go through walls
+	Changing nearest monster indicator to only include monsters within light
+
 

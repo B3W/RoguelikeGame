@@ -1033,6 +1033,7 @@ void new_dungeon(dungeon *d)
 
   place_pc(d);
   d->character_arr[d->pc.position[dim_y]][d->pc.position[dim_x]] = &d->pc;
-
+  config_player_map(d);
+  
   gen_monsters(d);
 }

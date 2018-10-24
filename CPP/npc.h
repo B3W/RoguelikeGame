@@ -3,6 +3,7 @@
 
 # include <stdint.h>
 
+# include "character.h"
 # include "dims.h"
 
 # define NPC_SMART         0x00000001
@@ -42,18 +43,18 @@
   ((character)->npc->characteristics & NPC_##bit)
 
 class dungeon;
-class character;
 typedef uint32_t npc_characteristics_t;
 
-typedef struct npc {
+class non_player : public character {
+public:
   npc_characteristics_t characteristics;
   uint32_t have_seen_pc;
   pair_t pc_last_known_position;
 
-} npc_t;
+};
 
 void gen_monsters(dungeon *d);
-void npc_delete(npc_t *n);
+void npc_delete(non_player *n);
 void npc_next_pos(dungeon *d, character *c, pair_t next);
 uint32_t dungeon_has_npcs(dungeon *d);
 

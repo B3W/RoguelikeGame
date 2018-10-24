@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <ncurses.h>
+#include <cmath>
 #include <ctype.h>
 #include <stdlib.h>
 
@@ -10,8 +11,11 @@
 #include "utils.h"
 #include "dungeon.h"
 
+#define LIGHT_RADIUS 3
+
 /* Same ugly hack we did in path.c */
 static dungeon *dungeon_ptr;
+static uint8_t fog_flag = 1;
 
 class io_message {
 public:
@@ -198,47 +202,97 @@ static character *io_nearest_visible_monster(dungeon *d)
   return n;
 }
 
+uint8_t outside_light(dungeon *d, character *c)
+{
+  int32_t x_dist, y_dist;
+
+  x_dist = abs(d->pc.position[dim_x] - c->position[dim_x]);
+  y_dist = abs(d->pc.position[dim_y] - c->position[dim_y]);
+
+  if ((0 <= x_dist && x_dist <= LIGHT_RADIUS) && (0 <= y_dist && y_dist <= LIGHT_RADIUS)) {
+    return 0;
+  }
+  return 1;      
+}
+
 void io_display(dungeon *d)
 {
   uint32_t y, x;
   character *c;
 
   clear();
-  for (y = 0; y < 21; y++) {
-    for (x = 0; x < 80; x++) {
-      if (d->character_arr[y][x]) {
-        mvaddch(y + 1, x, d->character_arr[y][x]->symbol);
-      } else {
-        switch (mapxy(x, y)) {
-        case ter_wall:
-        case ter_wall_immutable:
-          mvaddch(y + 1, x, ' ');
-          break;
-        case ter_floor:
-        case ter_floor_room:
-          mvaddch(y + 1, x, '.');
-          break;
-        case ter_floor_hall:
-          mvaddch(y + 1, x, '#');
-          break;
-        case ter_debug:
-          mvaddch(y + 1, x, '*');
-          break;
-        case ter_stairs_up:
-          mvaddch(y + 1, x, '<');
-          break;
-        case ter_stairs_down:
-          mvaddch(y + 1, x, '>');
-          break;
-        default:
- /* Use zero as an error symbol, since it stands out somewhat, and it's *
-  * not otherwise used.                                                 */
-          mvaddch(y + 1, x, '0');
-        }
+  
+  if (fog_flag) {
+    for (y = 0; y < 21; y++) {
+      for (x = 0; x < 80; x++) {
+	if (d->character_arr[y][x] && !outside_light(d, d->character_arr[y][x])) {
+	  mvaddch(y + 1, x, d->character_arr[y][x]->symbol);
+	} else {
+	  switch (d->pc.pc->player_map[y][x]) {
+	  case ter_wall:
+	  case ter_wall_immutable:
+	    mvaddch(y + 1, x, ' ');
+	    break;
+	  case ter_floor:
+	  case ter_floor_room:
+	    mvaddch(y + 1, x, '.');
+	    break;
+	  case ter_floor_hall:
+	    mvaddch(y + 1, x, '#');
+	    break;
+	  case ter_debug:
+	    mvaddch(y + 1, x, '*');
+	    break;
+	  case ter_stairs_up:
+	    mvaddch(y + 1, x, '<');
+	    break;
+	  case ter_stairs_down:
+	    mvaddch(y + 1, x, '>');
+	    break;
+	  default:
+	    /* Use zero as an error symbol, since it stands out somewhat, and it's *
+	     * not otherwise used.                                                 */
+	    mvaddch(y + 1, x, '0');
+	  }
+	}
+      }
+    }
+  } else {
+    for (y = 0; y < 21; y++) {
+      for (x = 0; x < 80; x++) {
+	if (d->character_arr[y][x]) {
+	  mvaddch(y + 1, x, d->character_arr[y][x]->symbol);
+	} else {
+	  switch (mapxy(x, y)) {
+	  case ter_wall:
+	  case ter_wall_immutable:
+	    mvaddch(y + 1, x, ' ');
+	    break;
+	  case ter_floor:
+	  case ter_floor_room:
+	    mvaddch(y + 1, x, '.');
+	    break;
+	  case ter_floor_hall:
+	    mvaddch(y + 1, x, '#');
+	    break;
+	  case ter_debug:
+	    mvaddch(y + 1, x, '*');
+	    break;
+	  case ter_stairs_up:
+	    mvaddch(y + 1, x, '<');
+	    break;
+	  case ter_stairs_down:
+	    mvaddch(y + 1, x, '>');
+	    break;
+	  default:
+	    /* Use zero as an error symbol, since it stands out somewhat, and it's *
+	     * not otherwise used.                                                 */
+	    mvaddch(y + 1, x, '0');
+	  }
+	}
       }
     }
   }
-
   mvprintw(23, 1, "PC position is (%2d,%2d).",
            d->pc.position[dim_x], d->pc.position[dim_y]);
   mvprintw(22, 1, "%d known %s.", d->num_monsters,
@@ -527,6 +581,12 @@ void io_handle_input(dungeon *d)
       fail_code = 1;
       break;
     case 'L':
+      fail_code = 1;
+      break;
+    case 'f':
+      /* Toggle fog */
+      fog_flag = fog_flag ? 0 : 1;
+      io_display(d);
       fail_code = 1;
       break;
     case 'g':

@@ -308,6 +308,8 @@ uint32_t move_pc(dungeon *d, uint32_t dir)
 
   if ((dir != '>') && (dir != '<') && (mappair(next) >= ter_floor)) {
     move_character(d, &d->pc, next);
+    update_player_map(d);
+    
     dijkstra(d);
     dijkstra_tunnel(d);
 

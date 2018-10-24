@@ -3,13 +3,12 @@
 #include "utils.h"
 #include "npc.h"
 #include "dungeon.h"
-#include "character.h"
 #include "move.h"
 #include "path.h"
 #include "event.h"
 #include "pc.h"
 
-void npc_delete(npc_t *n)
+void npc_delete(non_player *n)
 {
   if (n) {
     free(n);
@@ -60,7 +59,7 @@ void gen_monsters(dungeon *d)
     m->alive = 1;
     m->sequence_number = ++d->character_sequence_number;
     m->pc = NULL;
-    m->npc = (npc_t *) malloc(sizeof (*m->npc));
+    m->npc = (non_player *) malloc(sizeof (*m->npc));
     m->npc->characteristics = rand() & 0x0000000f;
     /*    m->npc->characteristics = 0xf;*/
     m->symbol = symbol[m->npc->characteristics];

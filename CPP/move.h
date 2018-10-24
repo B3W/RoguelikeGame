@@ -3,6 +3,7 @@
 
 # include <stdint.h>
 
+#include "character.h"
 # include "dims.h"
 
 class dungeon;
