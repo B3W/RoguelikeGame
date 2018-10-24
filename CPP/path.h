@@ -3,7 +3,7 @@
 
 # define HARDNESS_PER_TURN 85
 
-typedef struct dungeon dungeon;
+class dungeon;
 
 void dijkstra(dungeon *d);
 void dijkstra_tunnel(dungeon *d);

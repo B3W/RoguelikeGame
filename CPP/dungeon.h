@@ -65,7 +65,7 @@ public:
   uint8_t pc_tunnel[DUNGEON_Y][DUNGEON_X];
   character_t *character[DUNGEON_Y][DUNGEON_X];
   character_t pc;
-  heap_t events;
+  heap events;
   uint16_t num_monsters;
   uint16_t max_monsters;
   uint32_t character_sequence_number;

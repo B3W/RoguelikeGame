@@ -13,14 +13,15 @@
 /* Same ugly hack we did in path.c */
 static dungeon *dungeon_ptr;
 
-typedef struct io_message {
+class io_message {
+public:
   /* Will print " --more-- " at end of line when another message follows. *
    * Leave 10 extra spaces for that.                                      */
   char msg[71];
-  struct io_message *next;
-} io_message_t;
+  io_message *next;
+};
 
-static io_message_t *io_head, *io_tail;
+static io_message *io_head, *io_tail;
 
 void io_init_terminal(void)
 {
@@ -53,10 +54,10 @@ void io_reset_terminal(void)
 
 void io_queue_message(const char *format, ...)
 {
-  io_message_t *tmp;
+  io_message *tmp;
   va_list ap;
 
-  if (!(tmp = (io_message_t *) malloc(sizeof (*tmp)))) {
+  if (!(tmp = (io_message *) malloc(sizeof (*tmp)))) {
     perror("malloc");
     exit(1);
   }

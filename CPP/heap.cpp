@@ -3,11 +3,12 @@
 
 #undef min
 
-struct heap_node {
-  heap_node_t *next;
-  heap_node_t *prev;
-  heap_node_t *parent;
-  heap_node_t *child;
+class heap_node {
+public:
+  heap_node *next;
+  heap_node *prev;
+  heap_node *parent;
+  heap_node *child;
   void *datum;
   uint32_t degree;
   uint32_t mark;
@@ -34,10 +35,10 @@ struct heap_node {
   (n)->prev->next = (n)->next;           \
 })
 
-void print_heap_node(heap_node_t *n, unsigned indent,
+void print_heap_node(heap_node *n, unsigned indent,
                      char *(*print)(const void *v))
 {
-  heap_node_t *nc;
+  heap_node *nc;
 
   printf("%*s%s\n", indent, "", print(n->datum));
   if (!(nc = n->child)) {
@@ -50,9 +51,9 @@ void print_heap_node(heap_node_t *n, unsigned indent,
   } while (nc != n->child);
 }
 
-void print_heap(heap_t *h, char *(*print)(const void *v))
+void print_heap(heap *h, char *(*print)(const void *v))
 {
-  heap_node_t *n;
+  heap_node *n;
 
   if (h->min) {
     printf("size = %u\n", h->size);
@@ -67,9 +68,9 @@ void print_heap(heap_t *h, char *(*print)(const void *v))
   }
 }
 
-void print_heap_node_list(heap_node_t *n)
+void print_heap_node_list(heap_node *n)
 {
-  heap_node_t *hn;
+  heap_node *hn;
 
   if (!n) {
     return;
@@ -83,7 +84,7 @@ void print_heap_node_list(heap_node_t *n)
   printf("\n");
 }
 
-void heap_init(heap_t *h,
+void heap_init(heap *h,
                int32_t (*compare)(const void *key, const void *with),
                void (*datum_delete)(void *))
 {
@@ -93,9 +94,9 @@ void heap_init(heap_t *h,
   h->datum_delete = datum_delete;
 }
 
-void heap_node_delete(heap_t *h, heap_node_t *hn)
+void heap_node_delete(heap *h, heap_node *hn)
 {
-  heap_node_t *next;
+  heap_node *next;
 
   hn->prev->next = NULL;
   while (hn) {
@@ -111,7 +112,7 @@ void heap_node_delete(heap_t *h, heap_node_t *hn)
   }
 }
 
-void heap_delete(heap_t *h)
+void heap_delete(heap *h)
 {
   if (h->min) {
     heap_node_delete(h, h->min);
@@ -122,11 +123,11 @@ void heap_delete(heap_t *h)
   h->datum_delete = NULL;
 }
 
-heap_node_t *heap_insert(heap_t *h, void *v)
+heap_node *heap_insert(heap *h, void *v)
 {
-  heap_node_t *n;
+  heap_node *n;
 
-  n = (heap_node_t *) calloc(1, sizeof (*n));
+  n = (heap_node *) calloc(1, sizeof (*n));
   n->datum = v;
 
   if (h->min) {
@@ -142,12 +143,12 @@ heap_node_t *heap_insert(heap_t *h, void *v)
   return n;
 }
 
-void *heap_peek_min(heap_t *h)
+void *heap_peek_min(heap *h)
 {
   return h->min ? h->min->datum : NULL;
 }
 
-static void heap_link(heap_t *h, heap_node_t *node, heap_node_t *root)
+static void heap_link(heap *h, heap_node *node, heap_node *root)
 {
   /*  remove_heap_node_from_list(node);*/
   if (root->child) {
@@ -161,11 +162,11 @@ static void heap_link(heap_t *h, heap_node_t *node, heap_node_t *root)
   node->mark = 0;
 }
 
-static void heap_consolidate(heap_t *h)
+static void heap_consolidate(heap *h)
 {
   uint32_t i;
-  heap_node_t *x, *y, *n;
-  heap_node_t *a[64]; /* Need ceil(lg(h->size)), so this is good  *
+  heap_node *x, *y, *n;
+  heap_node *a[64]; /* Need ceil(lg(h->size)), so this is good  *
                        * to the limit of a 64-bit address space,  *
                        * and much faster than any lg calculation. */
 
@@ -202,10 +203,10 @@ static void heap_consolidate(heap_t *h)
   }
 }
 
-void *heap_remove_min(heap_t *h)
+void *heap_remove_min(heap *h)
 {
   void *v;
-  heap_node_t *n;
+  heap_node *n;
 
   v = NULL;
 
@@ -237,7 +238,7 @@ void *heap_remove_min(heap_t *h)
   return v;
 }
 
-int heap_combine(heap_t *h, heap_t *h1, heap_t *h2)
+int heap_combine(heap *h, heap *h1, heap *h2)
 {
   if (h1->compare != h2->compare ||
       h1->datum_delete != h2->datum_delete) {
@@ -266,7 +267,7 @@ int heap_combine(heap_t *h, heap_t *h1, heap_t *h2)
   return 0;
 }
 
-static void heap_cut(heap_t *h, heap_node_t *n, heap_node_t *p)
+static void heap_cut(heap *h, heap_node *n, heap_node *p)
 {
   if (!--p->degree) {
     p->child = NULL;
@@ -280,9 +281,9 @@ static void heap_cut(heap_t *h, heap_node_t *n, heap_node_t *p)
   insert_heap_node_in_list(n, h->min);
 }
 
-static void heap_cascading_cut(heap_t *h, heap_node_t *n)
+static void heap_cascading_cut(heap *h, heap_node *n)
 {
-  heap_node_t *p;
+  heap_node *p;
 
   if ((p = n->parent)) {
     if (!n->mark) {
@@ -294,7 +295,7 @@ static void heap_cascading_cut(heap_t *h, heap_node_t *n)
   }
 }
 
-int heap_decrease_key(heap_t *h, heap_node_t *n, void *v)
+int heap_decrease_key(heap *h, heap_node *n, void *v)
 {
   if (h->compare(n->datum, v) <= 0) {
     return 1;
@@ -308,14 +309,14 @@ int heap_decrease_key(heap_t *h, heap_node_t *n, void *v)
   return heap_decrease_key_no_replace(h, n);
 }
 
-int heap_decrease_key_no_replace(heap_t *h, heap_node_t *n)
+int heap_decrease_key_no_replace(heap *h, heap_node *n)
 {
   /* No tests that the value hasn't actually increased.  Change *
    * occurs in place, so the check is not possible here.  The   *
    * user is completely responsible for ensuring that they      *
    * don't fubar the queue.                                     */
 
-  heap_node_t *p;
+  heap_node *p;
 
   p = n->parent;
 
@@ -348,9 +349,9 @@ char *print_int(const void *v)
 
 int main(int argc, char *argv[])
 {
-  heap_t h;
+  heap h;
   int **keys;
-  heap_node_t **a;
+  heap_node **a;
   /*  int *p;*/
   int i, j;
   int n;
@@ -362,7 +363,7 @@ int main(int argc, char *argv[])
   }
 
   keys = (int *) calloc(n, sizeof (*keys));
-  a = (heap_node_t *) calloc(n, sizeof (*a));
+  a = (heap_node *) calloc(n, sizeof (*a));
 
   heap_init(&h, compare, free);
 

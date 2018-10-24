@@ -5,7 +5,7 @@
 
 # include "dims.h"
 
-typedef struct dungeon dungeon;
+class dungeon;
 
 typedef struct pc {
 } pc_t;

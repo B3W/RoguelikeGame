@@ -12,7 +12,7 @@
 static dungeon *dungeon_ptr;
 
 typedef struct path {
-  heap_node_t *hn;
+  heap_node *hn;
   uint8_t pos[2];
 } path_t;
 
@@ -35,7 +35,7 @@ void dijkstra(dungeon *d)
   /* Currently assumes that monsters only move on floors.  Will *
    * need to be modified for tunneling and pass-wall monsters.  */
 
-  heap_t h;
+  heap h;
   uint32_t x, y;
   static path_t p[DUNGEON_Y][DUNGEON_X], *c;
   static uint32_t initialized = 0;
@@ -148,7 +148,7 @@ void dijkstra_tunnel(dungeon *d)
   /* Currently assumes that monsters only move on floors.  Will *
    * need to be modified for tunneling and pass-wall monsters.  */
 
-  heap_t h;
+  heap h;
   uint32_t x, y, size;
   static path_t p[DUNGEON_Y][DUNGEON_X], *c;
   static uint32_t initialized = 0;
