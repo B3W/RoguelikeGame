@@ -296,7 +296,7 @@ void io_display(dungeon *d)
   }
   mvprintw(23, 1, "PC position is (%2d,%2d).",
            d->pc.position[dim_x], d->pc.position[dim_y]);
-  mvprintw(22, 1, "%d known %s.", d->num_monsters,
+  mvprintw(22, 1, "%d %s detected.", d->num_monsters,
            d->num_monsters > 1 ? "monsters" : "monster");
   mvprintw(22, 30, "Nearest visible monster: ");
   if ((c = io_nearest_visible_monster(d))) {
@@ -338,14 +338,13 @@ uint32_t io_teleport_pc(dungeon *d)
   fog_flag = 0;
   io_display(d);
   
-  pair_t dest;
+  pair_t dest, prev;
   int key;
   uint8_t teleporting = 1;
 
-  dest[dim_x] = d->pc.position[dim_x];
-  dest[dim_y] = d->pc.position[dim_y];
-
-  /* TODO: ADD CHECKING FOR TELEPORTING PLAYER OUT OF BOUNDS OR ONTO OTHER CHARACTERS */
+  dest[dim_x] = prev[dim_x] = d->pc.position[dim_x];
+  dest[dim_y] = prev[dim_y] = d->pc.position[dim_y];
+  
   do {
     switch (key = getch())
       {
@@ -407,6 +406,26 @@ uint32_t io_teleport_pc(dungeon *d)
 	/* Don't need to redraw dungeon when unbound key hit */
 	continue;
       }
+    if (d->map[dest[dim_y]][dest[dim_x]] == ter_wall_immutable) {
+      /* Out of bounds move */
+      dest[dim_x] = prev[dim_x];
+      dest[dim_y] = prev[dim_y];
+      io_queue_message("Unknown dark magic prevents you from exiting dungeon.");
+      io_print_message_queue(0, 0);
+      continue;
+    } else if (charpair(dest)) {
+      /* Another character is in the spot */
+      dest[dim_x] = prev[dim_x];
+      dest[dim_y] = prev[dim_y];
+      io_queue_message("Trying to teleport inside another monster?");
+      io_queue_message("Now that's cruel.");
+      io_print_message_queue(0, 0);
+      continue;
+    }
+    
+    prev[dim_x] = dest[dim_x];
+    prev[dim_y] = dest[dim_y];
+    
     io_display(d);
     mvaddch(dest[dim_y] + 1, dest[dim_x], '*');
   } while (teleporting);
@@ -418,12 +437,14 @@ uint32_t io_teleport_pc(dungeon *d)
   d->pc.position[dim_x] = dest[dim_x];
 
   if (mappair(dest) < ter_floor) {
-    mappair(dest) = ter_floor;
+    mappair(dest) = ter_floor_hall;
   }
 
   dijkstra(d);
   dijkstra_tunnel(d);
 
+  update_player_map(d);
+  
   fog_flag = prev_fog_flag;
   io_display(d);
   
@@ -553,7 +574,13 @@ static void io_list_monsters(dungeon *d)
   for (count = 0, y = 1; y < DUNGEON_Y - 1; y++) {
     for (x = 1; x < DUNGEON_X - 1; x++) {
       if (d->character_arr[y][x] && d->character_arr[y][x] != &d->pc) {
-        c[count++] = d->character_arr[y][x];
+	if (fog_flag) {
+	  if (!outside_light(d, d->character_arr[y][x])) {
+	    c[count++] = d->character_arr[y][x];
+	  }
+	}else {
+	  c[count++] = d->character_arr[y][x];
+	}
       }
     }
   }

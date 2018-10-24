@@ -125,7 +125,8 @@
 
 10/24/2018 1:45 PM
 	Implemented teleportation
-	Adding checks to make sure player isn't teleported to invalid location
+	Added checks to make sure player isn't teleported to invalid location
+	Changed monster list to only display visible monsters (will display all if fog of war toggled off)
 	Changing light to not go through walls
 
 
