@@ -15,7 +15,7 @@
 #include "event.h"
 #include "io.h"
 
-void do_combat(dungeon *d, character_t *atk, character_t *def)
+void do_combat(dungeon *d, character *atk, character *def)
 {
   int can_see_atk, can_see_def;
   const char *organs[] = {
@@ -99,7 +99,7 @@ void do_combat(dungeon *d, character_t *atk, character_t *def)
   }
 }
 
-void move_character(dungeon *d, character_t *c, pair_t next)
+void move_character(dungeon *d, character *c, pair_t next)
 {
   if (charpair(next) &&
       ((next[dim_y] != c->position[dim_y]) ||
@@ -108,18 +108,18 @@ void move_character(dungeon *d, character_t *c, pair_t next)
   } else {
     /* No character in new position. */
 
-    d->character[c->position[dim_y]][c->position[dim_x]] = NULL;
+    d->character_arr[c->position[dim_y]][c->position[dim_x]] = NULL;
     c->position[dim_y] = next[dim_y];
     c->position[dim_x] = next[dim_x];
-    d->character[c->position[dim_y]][c->position[dim_x]] = c;
+    d->character_arr[c->position[dim_y]][c->position[dim_x]] = c;
   }
 }
 
 void do_moves(dungeon *d)
 {
   pair_t next;
-  character_t *c;
-  event_t *e;
+  character *c;
+  event *e;
 
   /* Remove the PC when it is PC turn.  Replace on next call.  This allows *
    * use to completely uninit the heap when generating a new level without *
@@ -130,7 +130,7 @@ void do_moves(dungeon *d)
     /* The PC always goes first one a tie, so we don't use new_event().  *
      * We generate one manually so that we can set the PC sequence       *
      * number to zero.                                                   */
-    e = (event_t *) malloc(sizeof (*e));
+    e = (event *) malloc(sizeof (*e));
     e->type = event_character_turn;
     /* Hack: New dungeons are marked.  Unmark and ensure PC goes at d->time, *
      * otherwise, monsters get a turn before the PC.                         */
@@ -146,15 +146,15 @@ void do_moves(dungeon *d)
   }
 
   while (pc_is_alive(d) &&
-         (e = (event_t *) heap_remove_min(&d->events)) &&
+         (e = (event *) heap_remove_min(&d->events)) &&
          ((e->type != event_character_turn) || (e->c != &d->pc))) {
     d->time = e->time;
     if (e->type == event_character_turn) {
       c = e->c;
     }
     if (!c->alive) {
-      if (d->character[c->position[dim_y]][c->position[dim_x]] == c) {
-        d->character[c->position[dim_y]][c->position[dim_x]] = NULL;
+      if (d->character_arr[c->position[dim_y]][c->position[dim_x]] == c) {
+        d->character_arr[c->position[dim_y]][c->position[dim_x]] = NULL;
       }
       if (c != &d->pc) {
         event_delete(e);
@@ -181,7 +181,7 @@ void do_moves(dungeon *d)
   }
 }
 
-void dir_nearest_wall(dungeon *d, character_t *c, pair_t dir)
+void dir_nearest_wall(dungeon *d, character *c, pair_t dir)
 {
   dir[dim_x] = dir[dim_y] = 0;
 
@@ -193,7 +193,7 @@ void dir_nearest_wall(dungeon *d, character_t *c, pair_t dir)
   }
 }
 
-uint32_t against_wall(dungeon *d, character_t *c)
+uint32_t against_wall(dungeon *d, character *c)
 {
   return ((mapxy(c->position[dim_x] - 1,
                  c->position[dim_y]    ) == ter_wall_immutable) ||
@@ -205,7 +205,7 @@ uint32_t against_wall(dungeon *d, character_t *c)
                  c->position[dim_y] + 1) == ter_wall_immutable));
 }
 
-uint32_t in_corner(dungeon *d, character_t *c)
+uint32_t in_corner(dungeon *d, character *c)
 {
   uint32_t num_immutable;
 

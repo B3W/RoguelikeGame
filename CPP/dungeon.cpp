@@ -612,7 +612,7 @@ void delete_dungeon(dungeon *d)
 {
   free(d->rooms);
   heap_delete(&d->events);
-  memset(d->character, 0, sizeof (d->character));
+  memset(d->character_arr, 0, sizeof (d->character_arr));
 }
 
 void init_dungeon(dungeon *d)
@@ -1032,7 +1032,7 @@ void new_dungeon(dungeon *d)
   d->character_sequence_number = sequence_number;
 
   place_pc(d);
-  d->character[d->pc.position[dim_y]][d->pc.position[dim_x]] = &d->pc;
+  d->character_arr[d->pc.position[dim_y]][d->pc.position[dim_x]] = &d->pc;
 
   gen_monsters(d);
 }

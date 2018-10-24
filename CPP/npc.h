@@ -42,7 +42,7 @@
   ((character)->npc->characteristics & NPC_##bit)
 
 class dungeon;
-typedef struct character character_t;
+class character;
 typedef uint32_t npc_characteristics_t;
 
 typedef struct npc {
@@ -54,7 +54,7 @@ typedef struct npc {
 
 void gen_monsters(dungeon *d);
 void npc_delete(npc_t *n);
-void npc_next_pos(dungeon *d, character_t *c, pair_t next);
+void npc_next_pos(dungeon *d, character *c, pair_t next);
 uint32_t dungeon_has_npcs(dungeon *d);
 
 #endif

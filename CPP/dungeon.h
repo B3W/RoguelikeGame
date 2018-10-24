@@ -26,8 +26,8 @@
 #define mapxy(x, y) (d->map[y][x])
 #define hardnesspair(pair) (d->hardness[pair[dim_y]][pair[dim_x]])
 #define hardnessxy(x, y) (d->hardness[y][x])
-#define charpair(pair) (d->character[pair[dim_y]][pair[dim_x]])
-#define charxy(x, y) (d->character[y][x])
+#define charpair(pair) (d->character_arr[pair[dim_y]][pair[dim_x]])
+#define charxy(x, y) (d->character_arr[y][x])
 
 typedef enum __attribute__ ((__packed__)) terrain_type {
   ter_debug,
@@ -63,8 +63,8 @@ public:
   uint8_t hardness[DUNGEON_Y][DUNGEON_X];
   uint8_t pc_distance[DUNGEON_Y][DUNGEON_X];
   uint8_t pc_tunnel[DUNGEON_Y][DUNGEON_X];
-  character_t *character[DUNGEON_Y][DUNGEON_X];
-  character_t pc;
+  character *character_arr[DUNGEON_Y][DUNGEON_X];
+  character pc;
   heap events;
   uint16_t num_monsters;
   uint16_t max_monsters;

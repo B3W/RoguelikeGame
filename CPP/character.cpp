@@ -9,10 +9,10 @@
 void character_delete(void *v)
 {
   /* The PC is never malloc()ed anymore, do don't attempt to free it here. */
-  character_t *c;
+  character *c;
 
   if (v) {
-    c = (character_t *) v;
+    c = (character *) v;
 
     if (c->npc) {
       npc_delete(c->npc);
@@ -21,7 +21,7 @@ void character_delete(void *v)
   }
 }
 
-uint32_t can_see(dungeon *d, character_t *voyeur, character_t *exhibitionist)
+uint32_t can_see(dungeon *d, character *voyeur, character *exhibitionist)
 {
   /* Application of Bresenham's Line Drawing Algorithm.  If we can draw *
    * a line from v to e without intersecting any walls, then v can see  *

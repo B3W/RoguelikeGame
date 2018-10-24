@@ -6,17 +6,17 @@
 # include "dims.h"
 
 class dungeon;
-typedef struct character character_t;
+class character;
 
 void next_move(dungeon *d,
-               character_t *c,
+               character *c,
                pair_t goal_pos,
                pair_t next_pos);
 void do_moves(dungeon *d);
-void dir_nearest_wall(dungeon *d, character_t *c, pair_t dir);
-uint32_t in_corner(dungeon *d, character_t *c);
-uint32_t against_wall(dungeon *d, character_t *c);
+void dir_nearest_wall(dungeon *d, character *c, pair_t dir);
+uint32_t in_corner(dungeon *d, character *c);
+uint32_t against_wall(dungeon *d, character *c);
 uint32_t move_pc(dungeon *d, uint32_t dir);
-void move_character(dungeon *d, character_t *c, pair_t next);
+void move_character(dungeon *d, character *c, pair_t next);
 
 #endif
