@@ -400,7 +400,7 @@ uint32_t io_teleport_pc(dungeon *d)
 	teleporting = 0;
 	break;
       case 'g':
-	if (charpair(dest)) {
+	if (charpair(dest) && charpair(dest) != &d->pc) {
 	  /* Another character is in the spot */
 	  dest[dim_x] = prev[dim_x];
 	  dest[dim_y] = prev[dim_y];

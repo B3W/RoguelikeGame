@@ -130,7 +130,7 @@
 
 10/24/2018 11:00 PM
 	Fixed seg fault in pc.cpp update_player_map when index going out of bounds
-	Slightly altered teleportation behavior to allow players to move through monster but not teleport into them
+	Slightly altered teleportation behavior to allow players to move through monsters but not teleport into them
 	Changed a body part to dreams in move.cpp
 
 
