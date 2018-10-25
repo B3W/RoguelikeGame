@@ -1,4 +1,4 @@
-Rougelike Dungeon with User Input
+Rougelike Dungeon with Fog of War
   The purpose of this program is to procedurally generate randomized dungeon
   levels. This dungeon contains rooms, corridors, and monsters. Monsters have
   randomized attributes that consist of intelligence, telepathy, tunneling and
@@ -8,9 +8,9 @@ Rougelike Dungeon with User Input
   Monsters can have none, all, or some combination of these attributes. The
   player can progress through levels via the stairs located within the dungeon.
 
-  Additional Features of the progeam:
-    - Pathing via Dijkstra's Algoritm for creatures to find the player character
-    - Status updates based on user input
+  Additional Features of the program:
+    - Pathing via Dijkstra's Algorithm for intelligent creatures to find the player character
+    - Status updates based on user input and dungeon events
 
   Key Mappings:
     7, y, KEY_HOME - Attempt to move PC one cell to the upper left
@@ -30,10 +30,18 @@ Rougelike Dungeon with User Input
       KEY_UP - Scroll monster list up when needed
       KEY_DOWN - Scroll monster list down when needed
       Escape, F1 - Close monster list and return to character control
+    Q - Quit the game 
+
+  Additional Key Mappings in CPP version:
     T - Display the tunneling distance map
-    
+    D - Display the non-tunneling distance map
+    H - display hardness map
     s - Display the normal game dungeon
-    Q - Quit the game
+    f - toggle 'fog of war' on and off
+    g - teleport player
+      r - teleports player to random spot within the dungeon
+      g - teleports player to spot denoted by '*'
+      Normal movement keys for moving spot to teleport to
     
   Within the dungeon, meaning of currently diplayed characters is as follows:
     ' ' - Denotes rock
@@ -42,24 +50,23 @@ Rougelike Dungeon with User Input
     '@' - Denotes player
     '<' - Denotes stair case going up
     '>' - Denotes stair case going down
+    '*' - Location of  player when teleporting
     '0', '1', ... , 'e', 'f' - Denote monsters of various attributes
 
 Implementation
   This implementation succeeds in meeting all of the required specifications.
-  The user can now move around the PC and take staircases to new dungeons.
-  Dungeons are not connected and each staircase taken will place the PC in
-  a completely new dungeon. A new portion in main of rlg327.c handles the
-  user input. check_move in move.c verifies PC movement. display_monster_list
-  in rlg327.c does all of the work of showing the monster list. display_message
-  in utils.c displays statuses above the dungeon.
+  All code was ported over to C++ (i.e. structs to classes, gcc -> g++, etc.).
+  The player carries a light with which they can see in a 3 tile x 3 tile radius.
+  This feature is able to be toggled. The monster list and the nearest monsters
+  indicator change behavior based on the status of the fog of war. Pressing 'g'
+  will allow the player to teleport to any location within the dungeon.
 
 NOTE
   If using PuTTY, navigate to Connection -> Data and make sure 'Terminal-type
-  string' is putty. There has also been some weird keypad behavior with the
-  keypad when using PuTTY.
+  string' is putty. There has also been some weird keypad behavior when using PuTTY.
 
 Author
   Weston Berg (weberg@iastate.edu)
 
 Date
-  October 14th, 2018
+  October 24th, 2018
