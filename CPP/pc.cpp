@@ -34,19 +34,28 @@ void place_pc(dungeon *d)
 
 void update_player_map(dungeon *d)
 {
-  int32_t i, j, x, y;
-
-  i = d->pc.position[dim_x] - LIGHT_RADIUS;
-  if (i < 0) {
-    i = 0;
+  int16_t x, y;
+  pair_t start, end;
+  
+  start[dim_x] = d->pc.position[dim_x] - LIGHT_RADIUS;
+  if (start[dim_x] < 1) {
+    start[dim_x] = 1;
   }
-  j = d->pc.position[dim_y] - LIGHT_RADIUS;
-  if (j < 0) {
-    j = 0;
+  start[dim_y] = d->pc.position[dim_y] - LIGHT_RADIUS;
+  if (start[dim_y] < 1) {
+    start[dim_y] = 1;
+  }
+  end[dim_x] = d->pc.position[dim_x] + LIGHT_RADIUS;
+  if (!(end[dim_x] < DUNGEON_X)) {
+    end[dim_x] = DUNGEON_X - 1;
+  }
+  end[dim_y] = d->pc.position[dim_y] + LIGHT_RADIUS;
+  if (!(end[dim_y] < DUNGEON_Y)) {
+    end[dim_y] = DUNGEON_Y - 1;
   }
   
-  for (y = j; y <= (d->pc.position[dim_y] + LIGHT_RADIUS); y++) {
-    for (x = i; x <= (d->pc.position[dim_x] + LIGHT_RADIUS); x++) {
+  for (y = start[dim_y]; y <= end[dim_y]; y++) {
+    for (x = start[dim_x]; x <= end[dim_x]; x++) {
       if (d->map[y][x] >= ter_floor) {
 	d->pc.pc->player_map[y][x] = d->map[y][x];
       }

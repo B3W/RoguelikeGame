@@ -40,7 +40,7 @@ void do_combat(dungeon *d, character *atk, character *def)
     "pharynx",                 /* 18 */
     "esophagus",               /* 19 */
     "trachea",                 /* 20 */
-    "urethra",                 /* 21 */
+    "dreams",                  /* 21 */
     "spleen",                  /* 22 */
     "ganglia",                 /* 23 */
     "ear",                     /* 24 */

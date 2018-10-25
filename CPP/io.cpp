@@ -400,6 +400,15 @@ uint32_t io_teleport_pc(dungeon *d)
 	teleporting = 0;
 	break;
       case 'g':
+	if (charpair(dest)) {
+	  /* Another character is in the spot */
+	  dest[dim_x] = prev[dim_x];
+	  dest[dim_y] = prev[dim_y];
+	  io_queue_message("Trying to teleport inside another monster?");
+	  io_queue_message("Now that's cruel.");
+	  io_print_message_queue(0, 0);
+	  continue;
+	}
 	teleporting = 0;
 	break;
       default:
@@ -413,16 +422,7 @@ uint32_t io_teleport_pc(dungeon *d)
       io_queue_message("Unknown dark magic prevents you from exiting dungeon.");
       io_print_message_queue(0, 0);
       continue;
-    } else if (charpair(dest)) {
-      /* Another character is in the spot */
-      dest[dim_x] = prev[dim_x];
-      dest[dim_y] = prev[dim_y];
-      io_queue_message("Trying to teleport inside another monster?");
-      io_queue_message("Now that's cruel.");
-      io_print_message_queue(0, 0);
-      continue;
-    }
-    
+    }    
     prev[dim_x] = dest[dim_x];
     prev[dim_y] = dest[dim_y];
     
