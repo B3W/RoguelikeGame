@@ -4,19 +4,18 @@
 #include <stdint.h>
 #include <string>
 
-#include "descriptions.h"
 #include "dice.h"
 
 class object {
  private:
   std::string name, description;
-  object_type_t type;
+  char symbol;
   uint32_t color;
   int32_t hit, dodge, defence, weight, speed, attribute, value;
   dice damage;
-
+  
  public:
-  object() : name(),       description(), type(objtype_no_type),
+  object() : name(),       description(), symbol(),
 	     color(0),     hit(0),        dodge(0),
 	     defence(0),   weight(0),     speed(0),
 	     attribute(0), value(0),      damage()
@@ -24,7 +23,7 @@ class object {
   }
   void set(const std::string &name,
            const std::string &description,
-           const object_type_t type,
+           const char symbol,
            const uint32_t color,
            const int32_t hit,
            const dice &damage,
@@ -37,7 +36,7 @@ class object {
   
   inline const std::string &get_name() const { return name; }
   inline const std::string &get_description() const { return description; }
-  inline const object_type_t get_type() const { return type; }
+  inline const char get_symbol() const { return symbol; }
   inline const uint32_t get_color() const { return color; }
   inline const int32_t get_hit() const { return hit; }
   inline const dice &get_damage() const { return damage; }

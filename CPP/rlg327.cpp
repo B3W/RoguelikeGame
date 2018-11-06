@@ -88,9 +88,6 @@ int main(int argc, char *argv[])
 
   parse_descriptions(&d);
   //  print_descriptions(&d);
-
-  /* Quiet a false positive from valgrind. */
-  //  memset(&d, 0, sizeof (d));
   
   /* Default behavior: Seed with the time, generate a new dungeon, *
    * and don't write to disk.                                      */
@@ -98,7 +95,8 @@ int main(int argc, char *argv[])
   do_seed = 1;
   save_file = load_file = NULL;
   d.max_monsters = MAX_MONSTERS;
-
+  d.num_objects = MIN_OBJECTS;
+  
   /* The project spec requires '--load' and '--save'.  It's common  *
    * to have short and long forms of most switches (assuming you    *
    * don't run out of letters).  For now, we've got plenty.  Long   *
@@ -216,7 +214,8 @@ int main(int argc, char *argv[])
   /* Ignoring PC position in saved dungeons.  Not a bug. */
   config_pc(&d);
   gen_monsters(&d);
-
+  generate_objects(&d);
+  
   io_display(&d);
   if (!do_load && !do_image) {
     io_queue_message("Seed is %u.", seed);
@@ -265,8 +264,8 @@ int main(int argc, char *argv[])
     character_delete(d.PC);
   }
 
+  del_objects(&d);
   destroy_descriptions(&d);
-
   delete_dungeon(&d);
 
   return 0;

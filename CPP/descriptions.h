@@ -13,7 +13,8 @@ class object;
 uint32_t parse_descriptions(dungeon *d);
 uint32_t print_descriptions(dungeon *d);
 uint32_t destroy_descriptions(dungeon *d);
-uint32_t generate_objects(dungeon *d, uint32_t num_objs);
+uint32_t generate_objects(dungeon *d);
+uint32_t del_objects(dungeon *d);
 
 typedef enum object_type {
   objtype_no_type,
@@ -99,7 +100,11 @@ class object_description {
            const bool artifact,
            const uint32_t rarity);
   std::ostream &print(std::ostream &o);
-  object &generate_object(object &obj);
+  void generate_object(object *obj);
+  inline void set_created(bool is_created)
+  {
+    this->created = is_created;
+  }
   inline void set_picked_up(void)
   {
     this->picked_up = true;
@@ -121,6 +126,7 @@ class object_description {
   inline const bool get_artifact() const { return artifact; }
   inline const bool get_created() const { return created; }
   inline const bool get_picked_up() const { return picked_up; }
+  inline const uint32_t get_rarity() const { return rarity; }
 };
 
 std::ostream &operator<<(std::ostream &o, monster_description &m);

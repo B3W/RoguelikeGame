@@ -2,7 +2,7 @@
 
 void object::set(const std::string &name,
 		 const std::string &description,
-		 const object_type_t type,
+		 const char symbol,
 		 const uint32_t color,
 		 const int32_t hit,
 		 const dice &damage,
@@ -15,7 +15,7 @@ void object::set(const std::string &name,
 {
   this->name = name;
   this->description = description;
-  this->type = type;
+  this->symbol = symbol;
   this->color = color;
   this->hit = hit;
   this->damage = damage;

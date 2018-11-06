@@ -1034,17 +1034,15 @@ void object_description::set(const std::string &name,
   this->rarity = rrty;
 }
 
-object &object_description::generate_object(object &obj)
+void object_description::generate_object(object *obj)
 {
   std::string name, desc;
-  object_type_t type;
   uint32_t color;
   int32_t hit, dodge, defence, weight, speed, attribute, value;
   dice damage;
 
   name = this->name;
   desc = this->description;
-  type = this->type;
   color = this->color;
   hit = this->hit.roll();
   dodge = this->dodge.roll();
@@ -1055,17 +1053,68 @@ object &object_description::generate_object(object &obj)
   value = this->value.roll();
   damage = this->damage;
 
-  obj.set(name, desc, type, color, hit, damage, dodge,
-	  defence, weight, speed, attribute, value);
+  (*obj).set(name, desc, object_symbol[this->type], color, hit,
+	  damage, dodge, defence, weight, speed, attribute, value);
 
-  this->created = true;
-  return obj;
+  (*this).set_created(true);
 }
 
-uint32_t generate_objects(dungeon *d, uint32_t num_objs)
+uint32_t generate_objects(dungeon *d)
 {
+  uint32_t obj_cnt, rrty_chk, num_desc;
+  uint16_t x, y, max_X, max_Y;
+  bool valid_loc;
+  object_description obj_d;
+  object *obj;
   
+  obj_cnt = 0;
+  num_desc = (static_cast<uint32_t>(d->object_descriptions.size())) - 1;
+  max_X = DUNGEON_X - 1;
+  max_Y = DUNGEON_Y - 1;
+  
+  while (obj_cnt < d->num_objects) {
+  get_description:
+    obj_d = d->object_descriptions[rand_range(0, num_desc)];
+    if (obj_d.get_artifact()) {
+      if (obj_d.get_created() || obj_d.get_picked_up()) {
+	goto get_description;
+      }
+    }
 
+    rrty_chk = rand_range(0, 99);
+    if (obj_d.get_rarity() > rrty_chk) {
+      valid_loc = false;
+      while (!valid_loc) {
+	x = rand_range(1, max_X);
+	y = rand_range(1, max_Y);
+	if (!objxy(x, y) &&
+	    (ter_floor <= mapxy(x, y)) &&
+	    (mapxy(x, y) < ter_stairs)) {
+	  
+	  valid_loc = true;
+	}
+      }
+      obj = new object();
+      obj_d.generate_object(obj);
+      objxy(x, y) = obj; 
+      obj_cnt++;
+    }
+  }
+  
+  return 0;
+}
+
+uint32_t del_objects(dungeon *d)
+{
+  uint32_t x, y;
+
+  for (y = 0; y < DUNGEON_Y; y++) {
+    for (x = 0; x < DUNGEON_X; x++) {
+      if (objxy(x, y)) {
+	delete objxy(x, y);
+      }
+    }
+  }
   return 0;
 }
 

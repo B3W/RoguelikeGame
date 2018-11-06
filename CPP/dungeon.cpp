@@ -13,6 +13,7 @@
 #include "pc.h"
 #include "npc.h"
 #include "io.h"
+#include "object.h"
 
 #define DUMP_HARDNESS_IMAGES 0
 
@@ -502,6 +503,7 @@ static int empty_dungeon(dungeon *d)
         hardnessxy(x, y) = 255;
       }
       charxy(x, y) = NULL;
+      objxy(x, y) = NULL;
     }
   }
 
@@ -610,6 +612,7 @@ void delete_dungeon(dungeon *d)
   free(d->rooms);
   heap_delete(&d->events);
   memset(d->character_map, 0, sizeof (d->character_map));
+  memset(d->object_map, 0, sizeof(d->object_map));
 }
 
 void init_dungeon(dungeon *d)
@@ -1028,6 +1031,7 @@ void new_dungeon(dungeon *d)
 
   sequence_number = d->character_sequence_number;
 
+  del_objects(d);
   delete_dungeon(d);
 
   init_dungeon(d);
@@ -1038,4 +1042,5 @@ void new_dungeon(dungeon *d)
   d->character_map[d->PC->position[dim_y]][d->PC->position[dim_x]] = d->PC;
 
   gen_monsters(d);
+  generate_objects(d);
 }
