@@ -133,5 +133,12 @@
 	Slightly altered teleportation behavior to allow players to move through monsters but not teleport into them
 	Changed a body part to dreams in move.cpp
 
+11/05/2018 9:00 PM
+	Added 'object' class for containing object instances
+	Object instances can be dynamically created from 'object_description' using 'generate_object'
+	Added fields to 'object_description' to keep track if artifact has already be created or picked up
+	Added initialization to 'dungeon' class.
+	Update Makefile for 'object' files
+
 
 
