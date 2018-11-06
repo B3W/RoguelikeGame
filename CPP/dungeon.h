@@ -85,6 +85,15 @@ class dungeon {
   uint32_t quit;
   std::vector<monster_description> monster_descriptions;
   std::vector<object_description> object_descriptions;
+
+  dungeon() : num_rooms(0),    rooms(nullptr),  map(),
+	      hardness(),      pc_distance(),   pc_tunnel(),
+	      character_map(), PC(nullptr),     events(),
+	      num_monsters(0), max_monsters(0), character_sequence_number(0),
+	      time(0),         is_new(0),       quit(0),
+	      monster_descriptions(), object_descriptions()
+  {
+  }
 };
 
 void init_dungeon(dungeon *d);

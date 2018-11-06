@@ -15,6 +15,7 @@
 #include "dice.h"
 #include "character.h"
 #include "utils.h"
+#include "object.h"
 
 #define MONSTER_FILE_SEMANTIC          "RLG327 MONSTER DESCRIPTION"
 #define MONSTER_FILE_VERSION           1U
@@ -1031,6 +1032,41 @@ void object_description::set(const std::string &name,
   this->value = value;
   this->artifact = art;
   this->rarity = rrty;
+}
+
+object &object_description::generate_object(object &obj)
+{
+  std::string name, desc;
+  object_type_t type;
+  uint32_t color;
+  int32_t hit, dodge, defence, weight, speed, attribute, value;
+  dice damage;
+
+  name = this->name;
+  desc = this->description;
+  type = this->type;
+  color = this->color;
+  hit = this->hit.roll();
+  dodge = this->dodge.roll();
+  defence = this->defence.roll();
+  weight = this->weight.roll();
+  speed = this->speed.roll();
+  attribute = this->attribute.roll();
+  value = this->value.roll();
+  damage = this->damage;
+
+  obj.set(name, desc, type, color, hit, damage, dodge,
+	  defence, weight, speed, attribute, value);
+
+  this->created = true;
+  return obj;
+}
+
+uint32_t generate_objects(dungeon *d, uint32_t num_objs)
+{
+  
+
+  return 0;
 }
 
 std::ostream &object_description::print(std::ostream &o)

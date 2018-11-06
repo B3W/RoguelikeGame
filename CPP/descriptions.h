@@ -8,10 +8,12 @@
 # include "dice.h"
 
 class dungeon;
+class object;
 
 uint32_t parse_descriptions(dungeon *d);
 uint32_t print_descriptions(dungeon *d);
 uint32_t destroy_descriptions(dungeon *d);
+uint32_t generate_objects(dungeon *d, uint32_t num_objs);
 
 typedef enum object_type {
   objtype_no_type,
@@ -71,14 +73,15 @@ class object_description {
   object_type_t type;
   uint32_t color;
   dice hit, damage, dodge, defence, weight, speed, attribute, value;
-  bool artifact;
+  bool artifact, created, picked_up;
   uint32_t rarity;
  public:
   object_description() : name(),    description(), type(objtype_no_type),
                          color(0),  hit(),         damage(),
                          dodge(),   defence(),     weight(),
                          speed(),   attribute(),   value(),
-                         artifact(false), rarity(0)
+                         artifact(false), created(false), picked_up(false),
+			 rarity(0)
   {
   }
   void set(const std::string &name,
@@ -96,6 +99,11 @@ class object_description {
            const bool artifact,
            const uint32_t rarity);
   std::ostream &print(std::ostream &o);
+  object &generate_object(object &obj);
+  inline void set_picked_up(void)
+  {
+    this->picked_up = true;
+  }
   /* Need all these accessors because otherwise there is a *
    * circular dependancy that is difficult to get around.  */
   inline const std::string &get_name() const { return name; }
@@ -110,6 +118,9 @@ class object_description {
   inline const dice &get_speed() const { return speed; }
   inline const dice &get_attribute() const { return attribute; }
   inline const dice &get_value() const { return value; }
+  inline const bool get_artifact() const { return artifact; }
+  inline const bool get_created() const { return created; }
+  inline const bool get_picked_up() const { return picked_up; }
 };
 
 std::ostream &operator<<(std::ostream &o, monster_description &m);

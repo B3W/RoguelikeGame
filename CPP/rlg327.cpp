@@ -87,10 +87,7 @@ int main(int argc, char *argv[])
   char *pgm_file;
 
   parse_descriptions(&d);
-  print_descriptions(&d);
-  destroy_descriptions(&d);
-
-  return 0;
+  //  print_descriptions(&d);
 
   /* Quiet a false positive from valgrind. */
   //  memset(&d, 0, sizeof (d));
@@ -267,6 +264,8 @@ int main(int argc, char *argv[])
      * delete_pc(), because it will lead to a double delete.               */
     character_delete(d.PC);
   }
+
+  destroy_descriptions(&d);
 
   delete_dungeon(&d);
 
