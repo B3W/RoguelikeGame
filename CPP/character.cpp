@@ -6,22 +6,78 @@
 #include "pc.h"
 #include "dungeon.h"
 
-void character_delete(void *v)
+void character_delete(character *c)
 {
-  /* The PC is never malloc()ed anymore, do don't attempt to free it here. */
-  character *c;
-
-  if (v) {
-    c = (character *) v;
-
-    if (c->npc) {
-      npc_delete(c->npc);
-      free(c);
-    }
-  }
+  delete c;
 }
 
-uint32_t can_see(dungeon *d, character *voyeur, character *exhibitionist)
+int16_t *character_get_pos(character *c)
+{
+  return c->position;
+}
+
+int16_t character_get_y(const character *c)
+{
+  return c->position[dim_y];
+}
+
+int16_t character_set_y(character *c, int16_t y)
+{
+  return c->position[dim_y] = y;
+}
+
+int16_t character_get_x(const character *c)
+{
+  return c->position[dim_x];
+}
+
+int16_t character_set_x(character *c, int16_t x)
+{
+  return c->position[dim_x] = x;
+}
+
+void character_die(character *c)
+{
+  c->alive = 0;
+}
+
+int character_is_alive(const character *c)
+{
+  return c->alive;
+}
+
+char character_get_symbol(const character *c)
+{
+  return c->symbol;
+}
+
+uint32_t character_get_speed(const character *c)
+{
+  return c->speed;
+}
+
+uint32_t character_get_dkills(const character *c)
+{
+  return c->kills[kill_direct];
+}
+
+uint32_t character_get_ikills(const character *c)
+{
+  return c->kills[kill_avenged];
+}
+
+uint32_t character_increment_dkills(character *c)
+{
+  return c->kills[kill_direct]++;
+}
+
+uint32_t character_increment_ikills(character *c, uint32_t k)
+{
+  return c->kills[kill_avenged] += k;
+}
+
+uint32_t can_see(dungeon *d, pair_t voyeur, pair_t exhibitionist,
+                 int is_pc, int learn)
 {
   /* Application of Bresenham's Line Drawing Algorithm.  If we can draw *
    * a line from v to e without intersecting any walls, then v can see  *
@@ -34,14 +90,19 @@ uint32_t can_see(dungeon *d, character *voyeur, character *exhibitionist)
   pair_t first, second;
   pair_t del, f;
   int16_t a, b, c, i;
+  int16_t visual_range;
 
-  first[dim_x] = voyeur->position[dim_x];
-  first[dim_y] = voyeur->position[dim_y];
-  second[dim_x] = exhibitionist->position[dim_x];
-  second[dim_y] = exhibitionist->position[dim_y];
+  visual_range = is_pc ? PC_VISUAL_RANGE : NPC_VISUAL_RANGE;
 
-  if ((abs(first[dim_x] - second[dim_x]) > VISUAL_RANGE) ||
-      (abs(first[dim_y] - second[dim_y]) > VISUAL_RANGE)) {
+  first[dim_x] = voyeur[dim_x];
+  first[dim_y] = voyeur[dim_y];
+  second[dim_x] = exhibitionist[dim_x];
+  second[dim_y] = exhibitionist[dim_y];
+
+  /* Monsters only use this to see the PC, so we can *
+   * short circuit the tests when they are far away. */
+  if ((abs(first[dim_x] - second[dim_x]) > visual_range) ||
+      (abs(first[dim_y] - second[dim_y]) > visual_range)) {
     return 0;
   }
 
@@ -71,6 +132,9 @@ uint32_t can_see(dungeon *d, character *voyeur, character *exhibitionist)
     c = a - del[dim_x];
     b = c - del[dim_x];
     for (i = 0; i <= del[dim_x]; i++) {
+      if (learn) {
+        pc_learn_terrain(d->PC, first, mappair(first));
+      }
       if ((mappair(first) < ter_floor) && i && (i != del[dim_x])) {
         return 0;
       }
@@ -89,6 +153,9 @@ uint32_t can_see(dungeon *d, character *voyeur, character *exhibitionist)
     c = a - del[dim_y];
     b = c - del[dim_y];
     for (i = 0; i <= del[dim_y]; i++) {
+      if (learn) {
+        pc_learn_terrain(d->PC, first, mappair(first));
+      }
       if ((mappair(first) < ter_floor) && i && (i != del[dim_y])) {
         return 0;
       }

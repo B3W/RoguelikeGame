@@ -164,9 +164,6 @@ extern "C" {
            (_a < _b) ? _a : _b; \
          })
 
-# define max max2
-# define min min2
-
 # define max3(a, b, c) max(a, max(b, c))
 # define min3(a, b, c) min(a, min(b, c))
 

@@ -3,11 +3,10 @@
 
 # include <stdint.h>
 
-#include "character.h"
 # include "dims.h"
 
-class dungeon;
 class character;
+class dungeon;
 
 void next_move(dungeon *d,
                character *c,

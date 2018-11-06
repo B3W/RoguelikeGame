@@ -86,8 +86,14 @@ int main(int argc, char *argv[])
   char *load_file;
   char *pgm_file;
 
+  parse_descriptions(&d);
+  print_descriptions(&d);
+  destroy_descriptions(&d);
+
+  return 0;
+
   /* Quiet a false positive from valgrind. */
-  memset(&d, 0, sizeof (d));
+  //  memset(&d, 0, sizeof (d));
   
   /* Default behavior: Seed with the time, generate a new dungeon, *
    * and don't write to disk.                                      */
@@ -215,11 +221,9 @@ int main(int argc, char *argv[])
   gen_monsters(&d);
 
   io_display(&d);
-  /*
   if (!do_load && !do_image) {
     io_queue_message("Seed is %u.", seed);
   }
-  */
   while (pc_is_alive(&d) && dungeon_has_npcs(&d) && !d.quit) {
     do_moves(&d);
   }
@@ -255,9 +259,14 @@ int main(int argc, char *argv[])
   printf("You defended your life in the face of %u deadly beasts.\n"
          "You avenged the cruel and untimely murders of %u "
          "peaceful dungeon residents.\n",
-         d.pc.kills[kill_direct], d.pc.kills[kill_avenged]);
+         d.PC->kills[kill_direct], d.PC->kills[kill_avenged]);
 
-  pc_delete(d.pc.pc);
+  if (pc_is_alive(&d)) {
+    /* If the PC is dead, it's in the move heap and will get automatically *
+     * deleted when the heap destructs.  In that case, we can't call       *
+     * delete_pc(), because it will lead to a double delete.               */
+    character_delete(d.PC);
+  }
 
   delete_dungeon(&d);
 

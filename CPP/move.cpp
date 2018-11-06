@@ -40,7 +40,7 @@ void do_combat(dungeon *d, character *atk, character *def)
     "pharynx",                 /* 18 */
     "esophagus",               /* 19 */
     "trachea",                 /* 20 */
-    "dreams",                  /* 21 */
+    "urethra",                 /* 21 */
     "spleen",                  /* 22 */
     "ganglia",                 /* 23 */
     "ear",                     /* 24 */
@@ -56,7 +56,7 @@ void do_combat(dungeon *d, character *atk, character *def)
     def->alive = 0;
     charpair(def->position) = NULL;
     
-    if (def != &d->pc) {
+    if (def != d->PC) {
       d->num_monsters--;
     } else {
       if ((part = rand() % (sizeof (organs) / sizeof (organs[0]))) < 26) {
@@ -77,14 +77,16 @@ void do_combat(dungeon *d, character *atk, character *def)
                                   def->kills[kill_avenged]);
   }
 
-  if (atk == &d->pc) {
+  if (atk == d->PC) {
     io_queue_message("You smite the %c!", def->symbol);
   }
 
-  can_see_atk = can_see(d, &d->pc, atk);
-  can_see_def = can_see(d, &d->pc, def);
+  can_see_atk = can_see(d, character_get_pos(d->PC),
+                        character_get_pos(atk), 1, 0);
+  can_see_def = can_see(d, character_get_pos(d->PC),
+                        character_get_pos(def), 1, 0);
 
-  if (atk != &d->pc && def != &d->pc) {
+  if (atk != d->PC && def != d->PC) {
     if (can_see_atk && !can_see_def) {
       io_queue_message("The %c callously murders some poor, "
                        "defenseless creature.", atk->symbol);
@@ -108,10 +110,15 @@ void move_character(dungeon *d, character *c, pair_t next)
   } else {
     /* No character in new position. */
 
-    d->character_arr[c->position[dim_y]][c->position[dim_x]] = NULL;
+    d->character_map[c->position[dim_y]][c->position[dim_x]] = NULL;
     c->position[dim_y] = next[dim_y];
     c->position[dim_x] = next[dim_x];
-    d->character_arr[c->position[dim_y]][c->position[dim_x]] = c;
+    d->character_map[c->position[dim_y]][c->position[dim_x]] = c;
+  }
+
+  if (c == d->PC) {
+    pc_reset_visibility(d->PC);
+    pc_observe_terrain(d->PC, d);
   }
 }
 
@@ -131,45 +138,45 @@ void do_moves(dungeon *d)
      * We generate one manually so that we can set the PC sequence       *
      * number to zero.                                                   */
     e = (event *) malloc(sizeof (*e));
-    e->type = event_character_turn;
+    e->type = event_characterurn;
     /* Hack: New dungeons are marked.  Unmark and ensure PC goes at d->time, *
      * otherwise, monsters get a turn before the PC.                         */
     if (d->is_new) {
       d->is_new = 0;
       e->time = d->time;
     } else {
-      e->time = d->time + (1000 / d->pc.speed);
+      e->time = d->time + (1000 / d->PC->speed);
     }
     e->sequence = 0;
-    e->c = &d->pc;
+    e->c = d->PC;
     heap_insert(&d->events, e);
   }
 
   while (pc_is_alive(d) &&
          (e = (event *) heap_remove_min(&d->events)) &&
-         ((e->type != event_character_turn) || (e->c != &d->pc))) {
+         ((e->type != event_characterurn) || (e->c != d->PC))) {
     d->time = e->time;
-    if (e->type == event_character_turn) {
+    if (e->type == event_characterurn) {
       c = e->c;
     }
     if (!c->alive) {
-      if (d->character_arr[c->position[dim_y]][c->position[dim_x]] == c) {
-        d->character_arr[c->position[dim_y]][c->position[dim_x]] = NULL;
+      if (d->character_map[c->position[dim_y]][c->position[dim_x]] == c) {
+        d->character_map[c->position[dim_y]][c->position[dim_x]] = NULL;
       }
-      if (c != &d->pc) {
+      if (c != d->PC) {
         event_delete(e);
       }
       continue;
     }
 
-    npc_next_pos(d, c, next);
-    move_character(d, c, next);
+    npc_next_pos(d, (npc *) c, next);
+    move_character(d, (npc *) c, next);
 
     heap_insert(&d->events, update_event(d, e, 1000 / c->speed));
   }
 
   io_display(d);
-  if (pc_is_alive(d) && e->c == &d->pc) {
+  if (pc_is_alive(d) && e->c == d->PC) {
     c = e->c;
     d->time = e->time;
     /* Kind of kludgey, but because the PC is never in the queue when   *
@@ -253,8 +260,8 @@ uint32_t move_pc(dungeon *d, uint32_t dir)
     "Are you drunk?"
   };
 
-  next[dim_y] = d->pc.position[dim_y];
-  next[dim_x] = d->pc.position[dim_x];
+  next[dim_y] = d->PC->position[dim_y];
+  next[dim_x] = d->PC->position[dim_x];
 
 
   switch (dir) {
@@ -289,13 +296,13 @@ uint32_t move_pc(dungeon *d, uint32_t dir)
     next[dim_x]++;
     break;
   case '<':
-    if (mappair(d->pc.position) == ter_stairs_up) {
+    if (mappair(d->PC->position) == ter_stairs_up) {
       was_stairs = 1;
       new_dungeon_level(d, '<');
     }
     break;
   case '>':
-    if (mappair(d->pc.position) == ter_stairs_down) {
+    if (mappair(d->PC->position) == ter_stairs_down) {
       was_stairs = 1;
       new_dungeon_level(d, '>');
     }
@@ -307,9 +314,7 @@ uint32_t move_pc(dungeon *d, uint32_t dir)
   }
 
   if ((dir != '>') && (dir != '<') && (mappair(next) >= ter_floor)) {
-    move_character(d, &d->pc, next);
-    update_player_map(d);
-    
+    move_character(d, d->PC, next);
     dijkstra(d);
     dijkstra_tunnel(d);
 
