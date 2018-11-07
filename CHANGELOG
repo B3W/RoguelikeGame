@@ -135,10 +135,14 @@
 
 11/05/2018 9:00 PM
 	Added 'object' class for containing object instances
-	Object instances can be dynamically created from 'object_description' using 'generate_object'
+	Object instances can be dynamically created from an 'object_description' using 'generate_object'
 	Added fields to 'object_description' to keep track if artifact has already be created or picked up
 	Added initialization to 'dungeon' class.
 	Update Makefile for 'object' files
 
-
+11/06/2018 10:00 PM
+	Monster instances can now be dynamically created from a 'monster_definition' using 'generate_monster'
+	Additional fields added to 'character' class to accomadate new character metadata such as hitpoints, color, etc.
+	'gen_monsters' in npc.cpp modified to work with dynamic allocation.
+	Color added to the terminal in 'io_display' and 'io_display_no_fog' via color pairs, 'attron', and 'attroff'
 
