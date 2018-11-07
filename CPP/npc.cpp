@@ -84,6 +84,7 @@ void gen_monsters(dungeon *d)
 
     heap_insert(&d->events, new_event(d, event_characterurn, m, 0));
   }
+  m = nullptr;
 }
 
 void npc_next_pos_rand_tunnel(dungeon *d, npc *c, pair_t next)

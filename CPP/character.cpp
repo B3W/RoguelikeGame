@@ -7,6 +7,8 @@
 #include "dungeon.h"
 #include "descriptions.h"
 
+character::~character() {}
+
 void character_delete(character *c)
 {
   delete c;

@@ -54,6 +54,7 @@ public:
 	  characteristics(0), have_seen_pc(0), pc_last_known_position()
   {
   }
+  ~npc() {}
   void set(const std::string &name,
            const std::string &description);
   inline const std::string &get_name() const { return name; }

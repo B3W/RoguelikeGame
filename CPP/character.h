@@ -41,6 +41,7 @@ public:
 		kills()
   {
   }
+  virtual ~character() = 0;
   void set_killed(dungeon *d);
   inline void set_hitpoints(const int32_t hp) { hitpoints = hp; }
   inline void set_damage(const dice &dmg) { damage = dmg; }
