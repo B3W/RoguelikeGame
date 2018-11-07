@@ -146,3 +146,9 @@
 	'gen_monsters' in npc.cpp modified to work with dynamic allocation.
 	Color added to the terminal in 'io_display' and 'io_display_no_fog' via color pairs, 'attron', and 'attroff'
 
+11/06/2018 12:00 AM
+	UNIQ monster can now only be created exactly once per dungeon level and cannot be created again once killed
+	Artifact object can now only be created exactly once per dungeon level and cannot be created again once picked up
+	Changed to usage of pointers for descriptions during dynamic generation so creation status updates are persisted to dungeon
+	Fixed bug in 'io_display' where terrain was not replaced once that square went out of range of the player sight
+
