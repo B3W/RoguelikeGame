@@ -152,3 +152,10 @@
 	Changed to usage of pointers for descriptions during dynamic generation so creation status updates are persisted to dungeon
 	Fixed bug in 'io_display' where terrain was not replaced once that square went out of range of the player sight
 
+	11/07/2018 1:15 PM
+	Corrected polymorphic behavior of character base class and its derived pc and npc classes:
+	  Converted to pure virtual/abstract class via pure virtual destructor to allow for proper deletion of derived classes
+	  Added destructor implementations in pc and npc.
+	  Deleting a pointer to the base class will now delete the derived class instance as well
+	This fixed the memory leak coming from the 'generate_monsters' method
+
