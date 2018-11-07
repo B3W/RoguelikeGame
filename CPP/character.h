@@ -7,6 +7,8 @@
 # include "dims.h"
 # include "dice.h"
 
+class dungeon;
+
 typedef enum kill_type {
   kill_direct,
   kill_avenged,
@@ -18,6 +20,7 @@ private:
   int32_t hitpoints;
   dice damage;
   std::vector<uint32_t> color;
+  uint32_t desc_index;
 public:
   char symbol;
   pair_t position;
@@ -32,20 +35,21 @@ public:
    * characters have been created by the game.                              */
   uint32_t sequence_number;
   uint32_t kills[num_kill_types];
-  character() : hitpoints(0), damage(), color(),  symbol(),
-		position(),   speed(0),	alive(0),
-		sequence_number(0),     kills()
+  character() : hitpoints(0),  damage(), color(),
+		desc_index(0), symbol(), position(),
+		speed(0),      alive(0), sequence_number(0),
+		kills()
   {
   }
+  void set_killed(dungeon *d);
   inline void set_hitpoints(const int32_t hp) { hitpoints = hp; }
   inline void set_damage(const dice &dmg) { damage = dmg; }
   inline void set_color(const std::vector<uint32_t> &col) { color = col; }
+  inline void set_index(const uint32_t i) { desc_index = i; }
   inline const int32_t get_hitpoints() const { return hitpoints; }
   inline const dice &get_damage() const { return damage; }
   inline const std::vector<uint32_t> &get_color() const { return color; }
 };
-
-class dungeon;
 
 int32_t compare_characters_by_next_turn(const void *character1,
                                         const void *character2);

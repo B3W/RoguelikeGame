@@ -206,31 +206,27 @@ void io_display(dungeon *d)
   uint32_t illuminated;
   character *c;
   int32_t visible_monsters;
-  pair_t obj_pos;
+  pair_t pos;
 
   clear();
   for (visible_monsters = -1, y = 0; y < 21; y++) {
     for (x = 0; x < 80; x++) {
+      pos[dim_x] = x;
+      pos[dim_y] = y;
       if ((illuminated = is_illuminated(d->PC, y, x))) {
         attron(A_BOLD);
       }
       if (d->character_map[y][x] &&
-          can_see(d,
-                  character_get_pos(d->PC),
-                  character_get_pos(d->character_map[y][x]),
-                  1, 0)) {
+          can_see(d, character_get_pos(d->PC), pos, 1, 0)) {
 	attron(COLOR_PAIR(((*d->character_map[y][x]).get_color())[0]));
         mvaddch(y + 1, x, character_get_symbol(d->character_map[y][x]));
 	attroff(COLOR_PAIR(((*d->character_map[y][x]).get_color())[0]));
         visible_monsters++;
-      }	else if (objxy(x, y)) {
-	obj_pos[dim_x] = x;
-	obj_pos[dim_y] = y;
-      	if (can_see(d, character_get_pos(d->PC), obj_pos, 1, 0)) {
-	  attron(COLOR_PAIR((*objxy(x, y)).get_color()));
-	  mvaddch(y + 1, x, (*objxy(x, y)).get_symbol());
-	  attroff(COLOR_PAIR((*objxy(x, y)).get_color()));
-	}
+      }	else if (objxy(x, y) &&
+		 can_see(d, character_get_pos(d->PC), pos, 1, 0)) {
+	attron(COLOR_PAIR((*objxy(x, y)).get_color()));
+	mvaddch(y + 1, x, (*objxy(x, y)).get_symbol());
+	attroff(COLOR_PAIR((*objxy(x, y)).get_color()));
       } else {
         switch (pc_learned_terrain(d->PC, y, x)) {
         case ter_wall:

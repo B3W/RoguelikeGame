@@ -5,10 +5,16 @@
 #include "npc.h"
 #include "pc.h"
 #include "dungeon.h"
+#include "descriptions.h"
 
 void character_delete(character *c)
 {
   delete c;
+}
+
+void character::set_killed(dungeon *d)
+{
+  d->monster_descriptions[this->desc_index].set_killed();
 }
 
 int16_t *character_get_pos(character *c)

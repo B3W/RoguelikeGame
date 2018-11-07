@@ -1027,10 +1027,19 @@ void render_movement_cost_map(dungeon *d)
 
 void new_dungeon(dungeon *d)
 {
-  uint32_t sequence_number;
+  uint32_t sequence_number, i, size;
 
   sequence_number = d->character_sequence_number;
 
+  size = static_cast<uint32_t>(d->object_descriptions.size());
+  for (i = 0; i < size; i++) {
+    d->object_descriptions[i].set_created(false);
+  }
+  size = static_cast<uint32_t>(d->monster_descriptions.size());
+  for (i = 0; i < size; i++) {
+    d->monster_descriptions[i].set_generated(false);
+  }
+  
   del_objects(d);
   delete_dungeon(d);
 

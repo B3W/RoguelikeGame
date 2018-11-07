@@ -57,6 +57,7 @@ void do_combat(dungeon *d, character *atk, character *def)
     charpair(def->position) = NULL;
     
     if (def != d->PC) {
+      (*def).set_killed(d);
       d->num_monsters--;
     } else {
       if ((part = rand() % (sizeof (organs) / sizeof (organs[0]))) < 26) {

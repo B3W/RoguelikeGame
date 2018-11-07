@@ -67,10 +67,11 @@ class monster_description {
            const dice &damage,
            const uint32_t rarity);
   std::ostream &print(std::ostream &o);
-  inline void set_created(const bool is_created) { created = is_created; }
+  inline void set_generated(bool is_created) { created = is_created; }
   inline void set_killed() { killed = true; }
   inline const uint32_t get_abilities() const { return abilities; }
   inline const char get_symbol() const { return symbol; }
+  inline const uint32_t get_rarity() const { return rarity; }
   inline const bool is_created() const { return created; }
   inline const bool is_killed() const { return killed; }
   void generate_monster(npc *monster);

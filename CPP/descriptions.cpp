@@ -971,7 +971,7 @@ void monster_description::generate_monster(npc *monster)
   monster->symbol = this->symbol;
   monster->speed = (this->speed).roll();
 
-  (*this).set_created(true);
+  (*this).set_generated(true);
 }
 
 std::ostream &monster_description::print(std::ostream& o)
@@ -1079,10 +1079,10 @@ void object_description::generate_object(object *obj)
 
 uint32_t generate_objects(dungeon *d)
 {
-  uint32_t obj_cnt, rrty_chk, num_desc;
+  uint32_t obj_cnt, rrty_chk, num_desc, index;
   uint16_t x, y, max_X, max_Y;
   bool valid_loc;
-  object_description obj_d;
+  object_description *obj_d;
   object *obj;
   
   obj_cnt = 0;
@@ -1092,15 +1092,16 @@ uint32_t generate_objects(dungeon *d)
   
   while (obj_cnt < d->num_objects) {
   get_obj_description:
-    obj_d = d->object_descriptions[rand_range(0, num_desc)];
-    if (obj_d.get_artifact()) {
-      if (obj_d.get_created() || obj_d.get_picked_up()) {
+    index = rand_range(0, num_desc);
+    obj_d = &(d->object_descriptions[index]);
+    if ((*obj_d).get_artifact()) {
+      if ((*obj_d).get_created() || (*obj_d).get_picked_up()) {
 	goto get_obj_description;
       }
     }
 
     rrty_chk = rand_range(0, 99);
-    if (obj_d.get_rarity() > rrty_chk) {
+    if ((*obj_d).get_rarity() > rrty_chk) {
       valid_loc = false;
       while (!valid_loc) {
 	x = rand_range(1, max_X);
@@ -1113,7 +1114,7 @@ uint32_t generate_objects(dungeon *d)
 	}
       }
       obj = new object();
-      obj_d.generate_object(obj);
+      (*obj_d).generate_object(obj);
       objxy(x, y) = obj; 
       obj_cnt++;
     }

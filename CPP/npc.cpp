@@ -37,8 +37,8 @@ void gen_monsters(dungeon *d)
   npc *m;
   uint32_t room;
   pair_t p;
-  uint32_t num_cells, num_desc;
-  monster_description mon_d;
+  uint32_t num_cells, num_desc, rrty_chk, index;
+  monster_description *mon_d;
 
   num_cells = max_monster_cells(d);
   d->num_monsters = d->max_monsters < num_cells ? d->max_monsters : num_cells;
@@ -48,13 +48,19 @@ void gen_monsters(dungeon *d)
     m = new npc;
 
   get_mon_description:
-    mon_d = d->monster_descriptions[rand_range(0, num_desc)];
-    if (mon_d.get_abilities() & NPC_UNIQ) {
-      if (mon_d.is_created() || mon_d.is_killed()) {
+    index = rand_range(0, num_desc);
+    mon_d = &(d->monster_descriptions[index]);
+    if ((*mon_d).get_abilities() & NPC_UNIQ) {
+      if ((*mon_d).is_created() || (*mon_d).is_killed()) {
 	goto get_mon_description;
       }
     }
-    mon_d.generate_monster(m);
+    rrty_chk = rand_range(0, 99);
+    if (rrty_chk >= (*mon_d).get_rarity()) {
+      goto get_mon_description;
+    }
+    (*mon_d).generate_monster(m);
+    (*m).set_index(index);
     
     do {
       room = rand_range(1, d->num_rooms - 1);
