@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <vector>
 
 #include "string.h"
 
@@ -31,11 +32,13 @@ void config_pc(dungeon *d)
 {
   d->PC = new pc;
 
-  memset(d->PC, 0, sizeof (*d->PC));
   d->PC->symbol = '@';
 
   place_pc(d);
 
+  std::vector<uint32_t> col = std::vector<uint32_t>();
+  col.push_back(0);
+  (*d->PC).set_color(col);
   d->PC->speed = PC_SPEED;
   d->PC->alive = 1;
   d->PC->sequence_number = 0;

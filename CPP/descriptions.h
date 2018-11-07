@@ -8,6 +8,7 @@
 # include "dice.h"
 
 class dungeon;
+class npc;
 class object;
 
 uint32_t parse_descriptions(dungeon *d);
@@ -49,10 +50,11 @@ class monster_description {
   uint32_t abilities;
   dice speed, hitpoints, damage;
   uint32_t rarity;
+  bool created, killed;
  public:
   monster_description() : name(),       description(), symbol(0),   color(0),
                           abilities(0), speed(),       hitpoints(), damage(),
-                          rarity(0)
+                          rarity(0),    created(false),killed(false)
   {
   }
   void set(const std::string &name,
@@ -65,7 +67,13 @@ class monster_description {
            const dice &damage,
            const uint32_t rarity);
   std::ostream &print(std::ostream &o);
-  char get_symbol() { return symbol; }
+  inline void set_created(const bool is_created) { created = is_created; }
+  inline void set_killed() { killed = true; }
+  inline const uint32_t get_abilities() const { return abilities; }
+  inline const char get_symbol() const { return symbol; }
+  inline const bool is_created() const { return created; }
+  inline const bool is_killed() const { return killed; }
+  void generate_monster(npc *monster);
 };
 
 class object_description {

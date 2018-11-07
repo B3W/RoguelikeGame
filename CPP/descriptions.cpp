@@ -956,6 +956,24 @@ void monster_description::set(const std::string &name,
   this->rarity = rrty;
 }
 
+void monster_description::generate_monster(npc *monster)
+{
+  std::string name, desc;
+ 
+  name = this->name;
+  desc = this->description;
+
+  (*monster).set(name, desc);
+  (*monster).set_hitpoints((this->hitpoints).roll());
+  (*monster).set_damage(this->damage);
+  (*monster).set_color(this->color);
+  monster->characteristics = this->abilities;
+  monster->symbol = this->symbol;
+  monster->speed = (this->speed).roll();
+
+  (*this).set_created(true);
+}
+
 std::ostream &monster_description::print(std::ostream& o)
 {
   uint32_t i;
@@ -1073,11 +1091,11 @@ uint32_t generate_objects(dungeon *d)
   max_Y = DUNGEON_Y - 1;
   
   while (obj_cnt < d->num_objects) {
-  get_description:
+  get_obj_description:
     obj_d = d->object_descriptions[rand_range(0, num_desc)];
     if (obj_d.get_artifact()) {
       if (obj_d.get_created() || obj_d.get_picked_up()) {
-	goto get_description;
+	goto get_obj_description;
       }
     }
 

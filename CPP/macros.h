@@ -122,11 +122,14 @@ extern "C" {
 
 # endif /* __OPTIMIZE__ */
 
+/* swap() collides with names in the STL in recent versions of G++ */
+#ifndef __cplusplus
 # define swap(a, b) ({   \
   typeof (a) _tmp = (a); \
   (a) = (b);             \
   (b) = _tmp;            \
 })
+#endif
 
 # define memswap(a, b) ({    \
   typeof (*(a)) _tmp = *(a); \
@@ -150,22 +153,28 @@ extern "C" {
   _t1 == (_start + sizeof (*(d1)));                              \
 })
 
-# define max2(a, b)             \
+/* min() and max() collide with names in the STL in recent versions of G++ */
+# ifndef __cplusplus
+#  define max2(a, b)            \
          ({                     \
-	   typeof (a) _a = (a); \
+           typeof (a) _a = (a); \
            typeof (b) _b = (b); \
            (_a > _b) ? _a : _b; \
          })
 
-# define min2(a, b)             \
+#  define min2(a, b)            \
          ({                     \
-	   typeof (a) _a = (a); \
+           typeof (a) _a = (a); \
            typeof (b) _b = (b); \
            (_a < _b) ? _a : _b; \
          })
 
-# define max3(a, b, c) max(a, max(b, c))
-# define min3(a, b, c) min(a, min(b, c))
+#  define max max2
+#  define min min2
+
+#  define max3(a, b, c) max(a, max(b, c))
+#  define min3(a, b, c) min(a, min(b, c))
+# endif /* __cplusplus */
 
 # define frand() (((double) rand()) / ((double) RAND_MAX))
 

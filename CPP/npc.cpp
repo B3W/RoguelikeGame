@@ -8,6 +8,14 @@
 #include "path.h"
 #include "event.h"
 #include "pc.h"
+#include "descriptions.h"
+
+void npc::set(const std::string &name,
+	      const std::string &description)
+{
+  this->name = name;
+  this->description = description;
+}
 
 static uint32_t max_monster_cells(dungeon *d)
 {
@@ -29,15 +37,24 @@ void gen_monsters(dungeon *d)
   npc *m;
   uint32_t room;
   pair_t p;
-  const static char symbol[] = "0123456789abcdef";
-  uint32_t num_cells;
+  uint32_t num_cells, num_desc;
+  monster_description mon_d;
 
   num_cells = max_monster_cells(d);
   d->num_monsters = d->max_monsters < num_cells ? d->max_monsters : num_cells;
-
+  num_desc = (static_cast<uint32_t>(d->monster_descriptions.size())) - 1;
+ 
   for (i = 0; i < d->num_monsters; i++) {
     m = new npc;
-    memset(m, 0, sizeof (*m));
+
+  get_mon_description:
+    mon_d = d->monster_descriptions[rand_range(0, num_desc)];
+    if (mon_d.get_abilities() & NPC_UNIQ) {
+      if (mon_d.is_created() || mon_d.is_killed()) {
+	goto get_mon_description;
+      }
+    }
+    mon_d.generate_monster(m);
     
     do {
       room = rand_range(1, d->num_rooms - 1);
@@ -51,12 +68,9 @@ void gen_monsters(dungeon *d)
     m->position[dim_y] = p[dim_y];
     m->position[dim_x] = p[dim_x];
     d->character_map[p[dim_y]][p[dim_x]] = m;
-    m->speed = rand_range(5, 20);
     m->alive = 1;
     m->sequence_number = ++d->character_sequence_number;
-    m->characteristics = rand() & 0x0000000f;
     /*    m->npc->characteristics = 0xf;*/
-    m->symbol = symbol[m->characteristics];
     m->have_seen_pc = 0;
     m->kills[kill_direct] = m->kills[kill_avenged] = 0;
 

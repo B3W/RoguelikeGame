@@ -2,6 +2,7 @@
 # define NPC_H
 
 # include <stdint.h>
+# include <string>
 
 # include "dims.h"
 # include "character.h"
@@ -42,13 +43,22 @@
 # define has_characteristic(character, bit)              \
   ((character)->npc->characteristics & NPC_##bit)
 
-typedef uint32_t npc_characteristics_t;
-
 class npc : public character {
- public:
-  npc_characteristics_t characteristics;
+private:
+  std::string name, description;
+public:
+  uint32_t characteristics;
   uint32_t have_seen_pc;
   pair_t pc_last_known_position;
+  npc() : name(),             description(),
+	  characteristics(0), have_seen_pc(0), pc_last_known_position()
+  {
+  }
+  void set(const std::string &name,
+           const std::string &description);
+  inline const std::string &get_name() const { return name; }
+  inline const std::string &get_description() const { return description; }
+  inline const uint32_t get_abilities() const { return characteristics; }
 };
 
 void gen_monsters(dungeon *d);

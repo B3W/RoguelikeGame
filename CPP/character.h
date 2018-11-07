@@ -2,8 +2,10 @@
 # define CHARACTER_H
 
 # include <stdint.h>
+# include <vector>
 
 # include "dims.h"
+# include "dice.h"
 
 typedef enum kill_type {
   kill_direct,
@@ -12,7 +14,11 @@ typedef enum kill_type {
 } kill_type_t;
 
 class character {
- public:
+private:
+  int32_t hitpoints;
+  dice damage;
+  std::vector<uint32_t> color;
+public:
   char symbol;
   pair_t position;
   int32_t speed;
@@ -26,6 +32,17 @@ class character {
    * characters have been created by the game.                              */
   uint32_t sequence_number;
   uint32_t kills[num_kill_types];
+  character() : hitpoints(0), damage(), color(),  symbol(),
+		position(),   speed(0),	alive(0),
+		sequence_number(0),     kills()
+  {
+  }
+  inline void set_hitpoints(const int32_t hp) { hitpoints = hp; }
+  inline void set_damage(const dice &dmg) { damage = dmg; }
+  inline void set_color(const std::vector<uint32_t> &col) { color = col; }
+  inline const int32_t get_hitpoints() const { return hitpoints; }
+  inline const dice &get_damage() const { return damage; }
+  inline const std::vector<uint32_t> &get_color() const { return color; }
 };
 
 class dungeon;

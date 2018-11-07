@@ -219,14 +219,14 @@ void io_display(dungeon *d)
                   character_get_pos(d->PC),
                   character_get_pos(d->character_map[y][x]),
                   1, 0)) {
-        mvaddch(y + 1, x,
-                character_get_symbol(d->character_map[y][x]));
+	attron(COLOR_PAIR(((*d->character_map[y][x]).get_color())[0]));
+        mvaddch(y + 1, x, character_get_symbol(d->character_map[y][x]));
+	attroff(COLOR_PAIR(((*d->character_map[y][x]).get_color())[0]));
         visible_monsters++;
       }	else if (objxy(x, y)) {
 	obj_pos[dim_x] = x;
 	obj_pos[dim_y] = y;
       	if (can_see(d, character_get_pos(d->PC), obj_pos, 1, 0)) {
-	  
 	  attron(COLOR_PAIR((*objxy(x, y)).get_color()));
 	  mvaddch(y + 1, x, (*objxy(x, y)).get_symbol());
 	  attroff(COLOR_PAIR((*objxy(x, y)).get_color()));
@@ -302,7 +302,9 @@ void io_display_no_fog(dungeon *d)
   for (y = 0; y < 21; y++) {
     for (x = 0; x < 80; x++) {
       if (d->character_map[y][x]) {
+	attron(COLOR_PAIR(((*d->character_map[y][x]).get_color())[0]));
         mvaddch(y + 1, x, d->character_map[y][x]->symbol);
+	attroff(COLOR_PAIR(((*d->character_map[y][x]).get_color())[0]));
       } else if (objxy(x, y)) {
 	attron(COLOR_PAIR((*objxy(x, y)).get_color()));
 	mvaddch(y + 1, x, (*objxy(x, y)).get_symbol());
