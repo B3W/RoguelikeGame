@@ -1,51 +1,51 @@
 #ifndef OBJECT_H
-#define OBJECT_H
+# define OBJECT_H
 
-#include <stdint.h>
-#include <string>
+# include <string>
 
-#include "dice.h"
+# include "descriptions.h"
+# include "dims.h"
 
 class object {
  private:
-  std::string name, description;
-  char symbol;
+  const std::string &name;
+  const std::string &description;
+  object_type_t type;
   uint32_t color;
+  pair_t position;
+  const dice &damage;
   int32_t hit, dodge, defence, weight, speed, attribute, value;
-  dice damage;
-  
+  bool seen;
+  object *next;
+  object_description &od;
  public:
-  object() : name(),       description(), symbol(),
-	     color(0),     hit(0),        dodge(0),
-	     defence(0),   weight(0),     speed(0),
-	     attribute(0), value(0),      damage()
+  object(object_description &o, pair_t p, object *next);
+  ~object();
+  inline int32_t get_damage_base() const
   {
+    return damage.get_base();
   }
-  void set(const std::string &name,
-           const std::string &description,
-           const char symbol,
-           const uint32_t color,
-           const int32_t hit,
-           const dice &damage,
-           const int32_t dodge,
-           const int32_t defence,
-           const int32_t weight,
-           const int32_t speed,
-           const int32_t attribute,
-           const int32_t value);
-  
-  inline const std::string &get_name() const { return name; }
-  inline const std::string &get_description() const { return description; }
-  inline const char get_symbol() const { return symbol; }
-  inline const uint32_t get_color() const { return color; }
-  inline const int32_t get_hit() const { return hit; }
-  inline const dice &get_damage() const { return damage; }
-  inline const int32_t get_dodge() const { return dodge; }
-  inline const int32_t get_defence() const { return defence; }
-  inline const int32_t get_weight() const { return weight; }
-  inline const int32_t get_speed() const { return speed; }
-  inline const int32_t get_attribute() const { return attribute; }
-  inline const int32_t get_value() const { return value; }
+  inline int32_t get_damage_number() const
+  {
+    return damage.get_number();
+  }
+  inline int32_t get_damage_sides() const
+  {
+    return damage.get_sides();
+  }
+  char get_symbol();
+  uint32_t get_color();
+  const char *get_name();
+  int32_t get_speed();
+  int32_t roll_dice();
+  int32_t get_type();
+  bool have_seen() { return seen; }
+  void has_been_seen() { seen = true; }
+  int16_t *get_position() { return position; }
 };
+
+void gen_objects(dungeon_t *d);
+char object_get_symbol(object *o);
+void destroy_objects(dungeon_t *d);
 
 #endif

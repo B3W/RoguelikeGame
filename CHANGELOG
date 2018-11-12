@@ -159,3 +159,6 @@
 	  Deleting a pointer to the base class will now delete the derived class instance as well
 	This fixed the memory leak coming from the 'generate_monsters' method
 
+11/12/2018 11:00 AM
+	Adopted Dr. Shaeffer's code
+

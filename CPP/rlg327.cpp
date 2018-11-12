@@ -10,6 +10,7 @@
 #include "npc.h"
 #include "move.h"
 #include "io.h"
+#include "object.h"
 
 const char *victory =
   "\n                                       o\n"
@@ -68,7 +69,7 @@ void usage(char *name)
   fprintf(stderr,
           "Usage: %s [-r|--rand <seed>] [-l|--load [<file>]]\n"
           "          [-s|--save [<file>]] [-i|--image <pgm file>]\n"
-          "          [-n|--nummon <count>]",
+          "          [-n|--nummon <count>] [-o|--objcount <oject count>]\n",
           name);
 
   exit(-1);
@@ -86,17 +87,14 @@ int main(int argc, char *argv[])
   char *load_file;
   char *pgm_file;
 
-  parse_descriptions(&d);
-  //  print_descriptions(&d);
-  
   /* Default behavior: Seed with the time, generate a new dungeon, *
    * and don't write to disk.                                      */
   do_load = do_save = do_image = do_save_seed = do_save_image = 0;
   do_seed = 1;
   save_file = load_file = NULL;
   d.max_monsters = MAX_MONSTERS;
-  d.num_objects = MIN_OBJECTS;
-  
+  d.max_objects = MAX_OBJECTS;
+
   /* The project spec requires '--load' and '--save'.  It's common  *
    * to have short and long forms of most switches (assuming you    *
    * don't run out of letters).  For now, we've got plenty.  Long   *
@@ -182,6 +180,14 @@ int main(int argc, char *argv[])
             pgm_file = argv[++i];
           }
           break;
+        case 'o':
+          if ((!long_arg && argv[i][2]) ||
+              (long_arg && strcmp(argv[i], "-objcount")) ||
+              argc < ++i + 1 /* No more arguments */ ||
+              !sscanf(argv[i], "%hu", &d.max_objects)) {
+            usage(argv[0]);
+          }
+          break;
         default:
           usage(argv[0]);
         }
@@ -200,6 +206,7 @@ int main(int argc, char *argv[])
 
   srand(seed);
 
+  parse_descriptions(&d);
   io_init_terminal();
   init_dungeon(&d);
 
@@ -214,7 +221,8 @@ int main(int argc, char *argv[])
   /* Ignoring PC position in saved dungeons.  Not a bug. */
   config_pc(&d);
   gen_monsters(&d);
-  generate_objects(&d);
+  gen_objects(&d);
+  pc_observe_terrain(d.PC, &d);
   
   io_display(&d);
   if (!do_load && !do_image) {
@@ -264,9 +272,8 @@ int main(int argc, char *argv[])
     character_delete(d.PC);
   }
 
-  del_objects(&d);
-  destroy_descriptions(&d);
   delete_dungeon(&d);
+  destroy_descriptions(&d);
 
   return 0;
 }

@@ -503,7 +503,6 @@ static int empty_dungeon(dungeon *d)
         hardnessxy(x, y) = 255;
       }
       charxy(x, y) = NULL;
-      objxy(x, y) = NULL;
     }
   }
 
@@ -612,7 +611,7 @@ void delete_dungeon(dungeon *d)
   free(d->rooms);
   heap_delete(&d->events);
   memset(d->character_map, 0, sizeof (d->character_map));
-  memset(d->object_map, 0, sizeof(d->object_map));
+  destroy_objects(d);
 }
 
 void init_dungeon(dungeon *d)
@@ -620,6 +619,8 @@ void init_dungeon(dungeon *d)
   empty_dungeon(d);
   memset(&d->events, 0, sizeof (d->events));
   heap_init(&d->events, compare_events, event_delete);
+  memset(d->character_map, 0, sizeof (d->character_map));
+  memset(d->objmap, 0, sizeof (d->objmap));
 }
 
 int write_dungeon_map(dungeon *d, FILE *f)
@@ -1027,20 +1028,10 @@ void render_movement_cost_map(dungeon *d)
 
 void new_dungeon(dungeon *d)
 {
-  uint32_t sequence_number, i, size;
+  uint32_t sequence_number;
 
   sequence_number = d->character_sequence_number;
 
-  size = static_cast<uint32_t>(d->object_descriptions.size());
-  for (i = 0; i < size; i++) {
-    d->object_descriptions[i].set_created(false);
-  }
-  size = static_cast<uint32_t>(d->monster_descriptions.size());
-  for (i = 0; i < size; i++) {
-    d->monster_descriptions[i].set_generated(false);
-  }
-  
-  del_objects(d);
   delete_dungeon(d);
 
   init_dungeon(d);
@@ -1051,5 +1042,5 @@ void new_dungeon(dungeon *d)
   d->character_map[d->PC->position[dim_y]][d->PC->position[dim_x]] = d->PC;
 
   gen_monsters(d);
-  generate_objects(d);
+  gen_objects(d);
 }

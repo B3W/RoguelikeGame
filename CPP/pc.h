@@ -9,9 +9,9 @@
 
 class pc : public character {
  public:
+  ~pc() {}
   terrain_type known_terrain[DUNGEON_Y][DUNGEON_X];
   uint8_t visible[DUNGEON_Y][DUNGEON_X];
-  ~pc() {}
 };
 
 void pc_delete(pc *pc);

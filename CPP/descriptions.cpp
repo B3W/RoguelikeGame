@@ -15,7 +15,7 @@
 #include "dice.h"
 #include "character.h"
 #include "utils.h"
-#include "object.h"
+#include "event.h"
 
 #define MONSTER_FILE_SEMANTIC          "RLG327 MONSTER DESCRIPTION"
 #define MONSTER_FILE_VERSION           1U
@@ -95,7 +95,7 @@ static const struct {
   { 0, objtype_no_type }
 };
 
-extern const char object_symbol[] = {
+const char object_symbol[] = {
   '*', /* objtype_no_type */
   '|', /* objtype_WEAPON */
   ')', /* objtype_OFFHAND */
@@ -818,7 +818,7 @@ static uint32_t parse_object_description(std::ifstream &f,
 }
 
 static uint32_t parse_monster_descriptions(std::ifstream &f,
-                                           dungeon *d,
+                                           dungeon_t *d,
                                            std::vector<monster_description> *v)
 {
   std::string s;
@@ -848,7 +848,7 @@ static uint32_t parse_monster_descriptions(std::ifstream &f,
 }
 
 static uint32_t parse_object_descriptions(std::ifstream &f,
-                                          dungeon *d,
+                                          dungeon_t *d,
                                           std::vector<object_description> *v)
 {
   std::string s;
@@ -877,7 +877,7 @@ static uint32_t parse_object_descriptions(std::ifstream &f,
   return 0;
 }
 
-uint32_t parse_descriptions(dungeon *d)
+uint32_t parse_descriptions(dungeon_t *d)
 {
   std::string file;
   std::ifstream f;
@@ -916,7 +916,7 @@ uint32_t parse_descriptions(dungeon *d)
   return retval;
 }
 
-uint32_t print_descriptions(dungeon *d)
+uint32_t print_descriptions(dungeon_t *d)
 {
   std::vector<monster_description> &m = d->monster_descriptions;
   std::vector<monster_description>::iterator mi;
@@ -954,24 +954,6 @@ void monster_description::set(const std::string &name,
   this->hitpoints = hitpoints;
   this->damage = damage;
   this->rarity = rrty;
-}
-
-void monster_description::generate_monster(npc *monster)
-{
-  std::string name, desc;
- 
-  name = this->name;
-  desc = this->description;
-
-  (*monster).set(name, desc);
-  (*monster).set_hitpoints((this->hitpoints).roll());
-  (*monster).set_damage(this->damage);
-  (*monster).set_color(this->color);
-  monster->characteristics = this->abilities;
-  monster->symbol = this->symbol;
-  monster->speed = (this->speed).roll();
-
-  (*this).set_generated(true);
 }
 
 std::ostream &monster_description::print(std::ostream& o)
@@ -1013,7 +995,7 @@ std::ostream &operator<<(std::ostream &o, monster_description &m)
   return m.print(o);
 }
 
-uint32_t destroy_descriptions(dungeon *d)
+uint32_t destroy_descriptions(dungeon_t *d)
 {
   d->monster_descriptions.clear();
   d->object_descriptions.clear();
@@ -1052,91 +1034,6 @@ void object_description::set(const std::string &name,
   this->rarity = rrty;
 }
 
-void object_description::generate_object(object *obj)
-{
-  std::string name, desc;
-  uint32_t color;
-  int32_t hit, dodge, defence, weight, speed, attribute, value;
-  dice damage;
-
-  name = this->name;
-  desc = this->description;
-  color = this->color;
-  hit = this->hit.roll();
-  dodge = this->dodge.roll();
-  defence = this->defence.roll();
-  weight = this->weight.roll();
-  speed = this->speed.roll();
-  attribute = this->attribute.roll();
-  value = this->value.roll();
-  damage = this->damage;
-
-  (*obj).set(name, desc, object_symbol[this->type], color, hit,
-	  damage, dodge, defence, weight, speed, attribute, value);
-
-  (*this).set_created(true);
-}
-
-uint32_t generate_objects(dungeon *d)
-{
-  uint32_t obj_cnt, rrty_chk, num_desc, index;
-  uint16_t x, y, max_X, max_Y;
-  bool valid_loc;
-  object_description *obj_d;
-  object *obj;
-  
-  obj_cnt = 0;
-  num_desc = (static_cast<uint32_t>(d->object_descriptions.size())) - 1;
-  max_X = DUNGEON_X - 1;
-  max_Y = DUNGEON_Y - 1;
-  
-  while (obj_cnt < d->num_objects) {
-  get_obj_description:
-    index = rand_range(0, num_desc);
-    obj_d = &(d->object_descriptions[index]);
-    if ((*obj_d).get_artifact()) {
-      if ((*obj_d).get_created() || (*obj_d).get_picked_up()) {
-	goto get_obj_description;
-      }
-    }
-
-    rrty_chk = rand_range(0, 99);
-    if ((*obj_d).get_rarity() > rrty_chk) {
-      valid_loc = false;
-      while (!valid_loc) {
-	x = rand_range(1, max_X);
-	y = rand_range(1, max_Y);
-	if (!objxy(x, y) &&
-	    (ter_floor <= mapxy(x, y)) &&
-	    (mapxy(x, y) < ter_stairs)) {
-	  
-	  valid_loc = true;
-	}
-      }
-      obj = new object();
-      (*obj_d).generate_object(obj);
-      objxy(x, y) = obj; 
-      obj_cnt++;
-    }
-  }
-  
-  return 0;
-}
-
-uint32_t del_objects(dungeon *d)
-{
-  uint32_t x, y;
-
-  for (y = 0; y < DUNGEON_Y; y++) {
-    for (x = 0; x < DUNGEON_X; x++) {
-      if (objxy(x, y)) {
-	delete objxy(x, y);
-      }
-    }
-  }
-  return 0;
-}
-
 std::ostream &object_description::print(std::ostream &o)
 {
   uint32_t i;
@@ -1165,4 +1062,23 @@ return o << hit << std::endl << damage << std::endl << dodge << std::endl
 std::ostream &operator<<(std::ostream &o, object_description &od)
 {
   return od.print(o);
+}
+
+npc *monster_description::generate_monster(dungeon *d)
+{
+  npc *n;
+  std::vector<monster_description> &v = d->monster_descriptions;
+  uint32_t i;
+
+  while (!v[(i = (rand() % v.size()))].can_be_generated() ||
+         !v[i].pass_rarity_roll())
+    ;
+
+  monster_description &m = v[i];
+
+  n = new npc(d, m);
+
+  heap_insert(&d->events, new_event(d, event_character_turn, n, 0));
+
+  return n;
 }

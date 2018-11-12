@@ -5,18 +5,10 @@
 #include "npc.h"
 #include "pc.h"
 #include "dungeon.h"
-#include "descriptions.h"
-
-character::~character() {}
 
 void character_delete(character *c)
 {
   delete c;
-}
-
-void character::set_killed(dungeon *d)
-{
-  d->monster_descriptions[this->desc_index].set_killed();
 }
 
 int16_t *character_get_pos(character *c)
@@ -84,6 +76,11 @@ uint32_t character_increment_ikills(character *c, uint32_t k)
   return c->kills[kill_avenged] += k;
 }
 
+const char *character_get_name(const character *c)
+{
+  return c->name;
+}
+
 uint32_t can_see(dungeon *d, pair_t voyeur, pair_t exhibitionist,
                  int is_pc, int learn)
 {
@@ -142,6 +139,7 @@ uint32_t can_see(dungeon *d, pair_t voyeur, pair_t exhibitionist,
     for (i = 0; i <= del[dim_x]; i++) {
       if (learn) {
         pc_learn_terrain(d->PC, first, mappair(first));
+        pc_see_object(d->PC, objpair(first));
       }
       if ((mappair(first) < ter_floor) && i && (i != del[dim_x])) {
         return 0;
@@ -163,6 +161,7 @@ uint32_t can_see(dungeon *d, pair_t voyeur, pair_t exhibitionist,
     for (i = 0; i <= del[dim_y]; i++) {
       if (learn) {
         pc_learn_terrain(d->PC, first, mappair(first));
+        pc_see_object(d->PC, objpair(first));
       }
       if ((mappair(first) < ter_floor) && i && (i != del[dim_y])) {
         return 0;

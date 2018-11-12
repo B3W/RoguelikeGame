@@ -114,22 +114,23 @@ extern "C" {
    _s;                                                                     \
 })
 
-#  define free(ptr) ({                              \
-   typeof (ptr) _p = (ptr);                         \
-/*   dfree(_p);*/                                   \
-   free(_p);                                        \
+#  ifndef __cplusplus
+#   define free(ptr) ({                              \
+    typeof (ptr) _p = (ptr);                         \
+/*    dfree(_p);*/                                   \
+    free(_p);                                        \
 })
-
+#   endif
 # endif /* __OPTIMIZE__ */
 
 /* swap() collides with names in the STL in recent versions of G++ */
-#ifndef __cplusplus
-# define swap(a, b) ({   \
+# ifndef __cplusplus
+#  define swap(a, b) ({  \
   typeof (a) _tmp = (a); \
   (a) = (b);             \
   (b) = _tmp;            \
 })
-#endif
+# endif
 
 # define memswap(a, b) ({    \
   typeof (*(a)) _tmp = *(a); \
@@ -157,14 +158,14 @@ extern "C" {
 # ifndef __cplusplus
 #  define max2(a, b)            \
          ({                     \
-           typeof (a) _a = (a); \
+	   typeof (a) _a = (a); \
            typeof (b) _b = (b); \
            (_a > _b) ? _a : _b; \
          })
 
 #  define min2(a, b)            \
          ({                     \
-           typeof (a) _a = (a); \
+	   typeof (a) _a = (a); \
            typeof (b) _b = (b); \
            (_a < _b) ? _a : _b; \
          })
