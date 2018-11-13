@@ -46,6 +46,7 @@ class object {
   int32_t get_type();
   const char *get_type_name();
   object *get_next();
+  object_description &get_obj_desc();
   bool have_seen() { return seen; }
   void has_been_seen() { seen = true; }
   int16_t *get_position() { return position; }

@@ -45,6 +45,22 @@ uint32_t pc_is_alive(dungeon *d)
   return d->PC->alive;
 }
 
+void delete_pc_inventory(dungeon *d)
+{
+  for(uint32_t i = 0; i < d->PC->inventory.size(); i++) {
+    delete d->PC->inventory[i];
+  }
+}
+
+void delete_pc_equipment(dungeon *d)
+{
+  for(uint32_t i = 0; i < d->PC->equipment.size(); i++) {
+    if(d->PC->equipment[i]) {
+      delete d->PC->equipment[i];
+    }
+  }
+}
+
 void place_pc(dungeon *d)
 {
   d->PC->position[dim_y] = rand_range(d->rooms->position[dim_y],

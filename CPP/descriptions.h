@@ -179,6 +179,11 @@ class object_description {
   inline void generate() { num_generated++; }
   inline void destroy() { num_generated--; }
   inline void find() { num_found++; }
+  void set_expunged()
+  {
+    artifact = true;
+    num_found++;
+  }
 };
 
 std::ostream &operator<<(std::ostream &o, monster_description &m);

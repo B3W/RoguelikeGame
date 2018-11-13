@@ -911,26 +911,26 @@ int32_t io_display_equipment(dungeon *d, bool selection, const char *prompt)
   if(selection && equip_available) {
     equip_size--;  // Account for 0 indexing of vector
     wattron(equip_win, A_BOLD);
-    mvwaddch(equip_win, (index + 2), 1, (index + 48));
+    mvwaddch(equip_win, (index + 2), 1, (index + 97));
     wattroff(equip_win, A_BOLD);
     do {
       switch((c=wgetch(equip_win)))
 	{
 	case KEY_UP:
 	  if(index > 0) {
-	    mvwaddch(equip_win, (index + 2), 1, (index + 48));
+	    mvwaddch(equip_win, (index + 2), 1, (index + 97));
 	    index--;
 	    wattron(equip_win, A_BOLD);
-	    mvwaddch(equip_win, (index + 2), 1, (index + 48));
+	    mvwaddch(equip_win, (index + 2), 1, (index + 97));
 	    wattroff(equip_win, A_BOLD);
 	  }
 	  break;
 	case KEY_DOWN:
 	  if(index < equip_size) {
-	    mvwaddch(equip_win, (index + 2), 1, (index + 48));
+	    mvwaddch(equip_win, (index + 2), 1, (index + 97));
 	    index++;
 	    wattron(equip_win, A_BOLD);
-	    mvwaddch(equip_win, (index + 2), 1, (index + 48));
+	    mvwaddch(equip_win, (index + 2), 1, (index + 97));
 	    wattroff(equip_win, A_BOLD);
 	  }	  
 	  break;
@@ -1322,7 +1322,7 @@ void io_handle_input(dungeon *d)
       fail_code = 1;
       break;
     case ',':
-      /* TODO Pick up item                                                  */
+      /* TODO Pick up item                                              */
       tmp_obj = objpair(d->PC->position);
       if(tmp_obj) {
 	if(d->PC->inventory.size() == 10) {
@@ -1341,7 +1341,7 @@ void io_handle_input(dungeon *d)
       fail_code = 1;
       break;
     case 'I':
-      /* Inspect item                                              */
+      /* Inspect item                                                    */
       if((selection =
 	  io_display_inventory(d, true, "Select Item To INSPECT:")) >= 0) {
 
@@ -1354,9 +1354,11 @@ void io_handle_input(dungeon *d)
 	}
 	mvprintw(21, 1, (*tmp_obj).get_name());
 	mvprintw(22, 1, (*tmp_obj).get_type_name());	
-	sprintf(dmg_die, "%d+%dd%d", (*tmp_obj).get_damage_base(), (*tmp_obj).get_damage_number(), (*tmp_obj).get_damage_sides());
+	sprintf(dmg_die, "%d+%dd%d", (*tmp_obj).get_damage_base(),
+		(*tmp_obj).get_damage_number(), (*tmp_obj).get_damage_sides());
 	sprintf(obj_info, "HIT: %d  DAM: %s  DEF: %d  SPD: %d  DGE: %d  WGT: %d",
-		(*tmp_obj).get_hit(), dmg_die, (*tmp_obj).get_defence(), (*tmp_obj).get_speed(), (*tmp_obj).get_dodge(), (*tmp_obj).get_weight());
+		(*tmp_obj).get_hit(), dmg_die, (*tmp_obj).get_defence(),
+		(*tmp_obj).get_speed(), (*tmp_obj).get_dodge(), (*tmp_obj).get_weight());
 	mvprintw(23, 1, obj_info);
 	
 	std::istringstream s((*tmp_obj).get_desc());
@@ -1379,7 +1381,7 @@ void io_handle_input(dungeon *d)
       fail_code = 1;
       break;
     case 'w':
-      /* TODO Wear item                                                 */
+      /* Wear item                                                      */
       if((selection =
 	  io_display_inventory(d, true, "Select Item To WEAR:")) >= 0) {
 
@@ -1412,12 +1414,24 @@ void io_handle_input(dungeon *d)
       fail_code = 1;
       break;
     case 't':
-      /* TODO Take off item and place into inventory                    */
+      /* Take off item and place into inventory                        */
       if((selection =
-	  io_display_inventory(d, true, "Select Item To TAKE OFF:")) >= 0) {
+	  io_display_equipment(d, true, "Select Item To TAKE OFF:")) >= 0) {
 
-	tmp_obj = d->PC->inventory[selection];
-	
+	tmp_obj = d->PC->equipment[selection];
+	d->PC->equipment[selection] = nullptr;
+	/* If inventory is full then drop item onto ground */
+	if(d->PC->inventory.size() == d->PC->inventory.capacity()){
+	  if(objpair(d->PC->position)) {
+	    (*tmp_obj).set_next(objpair(d->PC->position));
+	  }
+	  objpair(d->PC->position) = tmp_obj;
+	  io_queue_message("Inventory full, %s dropped", (*tmp_obj).get_name());
+	} else {
+	  d->PC->inventory.push_back(tmp_obj);
+	  io_queue_message("%s unequipped", (*tmp_obj).get_name());
+	}
+	io_print_message_queue(0, 0);
       }
       fail_code = 1;
       break;
@@ -1438,12 +1452,16 @@ void io_handle_input(dungeon *d)
       fail_code = 1;
       break;
     case 'x':
-      /* TODO Destroy item                                              */
+      /* Destroy item                                                   */
       if((selection =
-	  io_display_inventory(d, true, "Select Item To DESTROY:")) >= 0) {
+	  io_display_inventory(d, true, "Select Item To DESTROY (this action is permanent):")) >= 0) {
 
 	tmp_obj = d->PC->inventory[selection];
-	
+	d->PC->inventory.erase(d->PC->inventory.begin() + selection);
+	(*tmp_obj).get_obj_desc().set_expunged();
+	io_queue_message("%s will no longer be generated", (*tmp_obj).get_name());
+	delete tmp_obj;
+	io_print_message_queue(0, 0);
       }
       fail_code = 1;
       break;

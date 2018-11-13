@@ -265,6 +265,8 @@ int main(int argc, char *argv[])
          "peaceful dungeon residents.\n",
          d.PC->kills[kill_direct], d.PC->kills[kill_avenged]);
 
+  delete_pc_inventory(&d);
+  delete_pc_equipment(&d);
   if (pc_is_alive(&d)) {
     /* If the PC is dead, it's in the move heap and will get automatically *
      * deleted when the heap destructs.  In that case, we can't call       *

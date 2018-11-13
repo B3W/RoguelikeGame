@@ -149,6 +149,11 @@ const char *object::get_type_name()
   return types_lookup[type-1].name;
 }
 
+object_description &object::get_obj_desc()
+{
+  return od;
+}
+
 object *object::get_next()
 {
   return next;

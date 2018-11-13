@@ -37,6 +37,8 @@ class pc : public character {
 
 equip_position_t get_epos(int32_t type);
 void pc_delete(pc *pc);
+void delete_pc_inventory(dungeon *d);
+void delete_pc_equipment(dungeon *d);
 uint32_t pc_is_alive(dungeon *d);
 void config_pc(dungeon *d);
 uint32_t pc_next_pos(dungeon *d, pair_t dir);
