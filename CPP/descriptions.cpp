@@ -68,33 +68,6 @@ static const struct {
   { 0, 0 }
 };
 
-#define type_lu_entry(type) { #type, objtype_##type }
-static const struct {
-  const char *name;
-  const object_type_t value;
-} types_lookup[] = {
-  type_lu_entry(WEAPON),
-  type_lu_entry(OFFHAND),
-  type_lu_entry(RANGED),
-  type_lu_entry(LIGHT),
-  type_lu_entry(ARMOR),
-  type_lu_entry(HELMET),
-  type_lu_entry(CLOAK),
-  type_lu_entry(GLOVES),
-  type_lu_entry(BOOTS),
-  type_lu_entry(AMULET),
-  type_lu_entry(RING),
-  type_lu_entry(SCROLL),
-  type_lu_entry(BOOK),
-  type_lu_entry(FLASK),
-  type_lu_entry(GOLD),
-  type_lu_entry(AMMUNITION),
-  type_lu_entry(FOOD),
-  type_lu_entry(WAND),
-  type_lu_entry(CONTAINER),
-  { 0, objtype_no_type }
-};
-
 const char object_symbol[] = {
   '*', /* objtype_no_type */
   '|', /* objtype_WEAPON */

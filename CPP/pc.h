@@ -1,17 +1,22 @@
 #ifndef PC_H
 # define PC_H
 
+# include <vector>
 # include <stdint.h>
 
 # include "dims.h"
 # include "character.h"
 # include "dungeon.h"
 
+class object;
+
 class pc : public character {
  public:
   ~pc() {}
   terrain_type known_terrain[DUNGEON_Y][DUNGEON_X];
   uint8_t visible[DUNGEON_Y][DUNGEON_X];
+  std::vector<object *> inventory;
+  std::vector<object *> equipment;
 };
 
 void pc_delete(pc *pc);

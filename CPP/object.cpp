@@ -92,9 +92,32 @@ const char *object::get_name()
   return name.c_str();
 }
 
+const char *object::get_desc()
+{
+  return description.c_str();
+}
+
 int32_t object::get_speed()
 {
   return speed;
+}
+
+int32_t object::get_hit()
+{
+  return hit;
+}
+
+int32_t object::get_defence()
+{
+  return defence;
+}
+int32_t object::get_weight()
+{
+  return weight;
+}
+int32_t object::get_dodge()
+{
+  return dodge;
 }
 
 int32_t object::roll_dice()
@@ -119,4 +142,19 @@ void destroy_objects(dungeon_t *d)
 int32_t object::get_type()
 {
   return type;
+}
+
+const char *object::get_type_name()
+{
+  return types_lookup[type-1].name;
+}
+
+object *object::get_next()
+{
+  return next;
+}
+
+void object::set_next(object *n)
+{
+  next = n;
 }

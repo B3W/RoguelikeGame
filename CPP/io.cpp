@@ -2,6 +2,9 @@
 #include <ncurses.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string>
+#include <sstream>
 
 #include "io.h"
 #include "move.h"
@@ -699,6 +702,343 @@ uint32_t io_teleport_pc(dungeon *d)
   return 0;
 }
 
+uint32_t io_inspect_monster(dungeon *d)
+{
+  pair_t dest;
+  int c;
+  fd_set readfs;
+  struct timeval tv;
+  character *tmp_character;
+  std::string tmp_str;
+  char character_info[80], dmg_die[10];
+
+  pc_reset_visibility(d->PC);
+  io_display_no_fog(d);
+
+  mvprintw(0, 0, "Select a monster. 't' to inspect; 'escape' to exit.");
+
+  dest[dim_y] = d->PC->position[dim_y];
+  dest[dim_x] = d->PC->position[dim_x];
+
+  mvaddch(dest[dim_y] + 1, dest[dim_x], '*');
+  refresh();
+
+  do {
+    do{
+      FD_ZERO(&readfs);
+      FD_SET(STDIN_FILENO, &readfs);
+
+      tv.tv_sec = 0;
+      tv.tv_usec = 125000; /* An eigth of a second */
+
+      io_redisplay_non_terrain(d, dest);
+    } while (!select(STDIN_FILENO + 1, &readfs, NULL, NULL, &tv));
+    /* Can simply draw the terrain when we move the cursor away, *
+     * because if it is a character or object, the refresh       *
+     * function will fix it for us.                              */
+    switch (mappair(dest)) {
+    case ter_wall:
+    case ter_wall_immutable:
+    case ter_unknown:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], ' ');
+      break;
+    case ter_floor:
+    case ter_floor_room:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '.');
+      break;
+    case ter_floor_hall:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '#');
+      break;
+    case ter_debug:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '*');
+      break;
+    case ter_stairs_up:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '<');
+      break;
+    case ter_stairs_down:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '>');
+      break;
+    default:
+ /* Use zero as an error symbol, since it stands out somewhat, and it's *
+  * not otherwise used.                                                 */
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '0');
+    }
+    switch ((c = getch())) {
+    case '7':
+    case 'y':
+    case KEY_HOME:
+      if (dest[dim_y] != 1) {
+        dest[dim_y]--;
+      }
+      if (dest[dim_x] != 1) {
+        dest[dim_x]--;
+      }
+      break;
+    case '8':
+    case 'k':
+    case KEY_UP:
+      if (dest[dim_y] != 1) {
+        dest[dim_y]--;
+      }
+      break;
+    case '9':
+    case 'u':
+    case KEY_PPAGE:
+      if (dest[dim_y] != 1) {
+        dest[dim_y]--;
+      }
+      if (dest[dim_x] != DUNGEON_X - 2) {
+        dest[dim_x]++;
+      }
+      break;
+    case '6':
+    case 'l':
+    case KEY_RIGHT:
+      if (dest[dim_x] != DUNGEON_X - 2) {
+        dest[dim_x]++;
+      }
+      break;
+    case '3':
+    case 'n':
+    case KEY_NPAGE:
+      if (dest[dim_y] != DUNGEON_Y - 2) {
+        dest[dim_y]++;
+      }
+      if (dest[dim_x] != DUNGEON_X - 2) {
+        dest[dim_x]++;
+      }
+      break;
+    case '2':
+    case 'j':
+    case KEY_DOWN:
+      if (dest[dim_y] != DUNGEON_Y - 2) {
+        dest[dim_y]++;
+      }
+      break;
+    case '1':
+    case 'b':
+    case KEY_END:
+      if (dest[dim_y] != DUNGEON_Y - 2) {
+        dest[dim_y]++;
+      }
+      if (dest[dim_x] != 1) {
+        dest[dim_x]--;
+      }
+      break;
+    case '4':
+    case 'h':
+    case KEY_LEFT:
+      if (dest[dim_x] != 1) {
+        dest[dim_x]--;
+      }
+      break;
+    case 't':
+      /* Display information on character if one exists at current position */
+      tmp_character = charpair(dest);
+      if(tmp_character && (tmp_character != d->PC)) {
+	/* Clear space for extra character info */
+	for(uint32_t y = 21; y < 23; y++) {
+	  for(uint32_t x = 1; x < DUNGEON_X; x++) {
+	    mvaddch(y, x, ' ');
+	  }
+	}
+	mvprintw(21, 1, tmp_character->name);
+	sprintf(dmg_die, "%d+%dd%d", (*tmp_character->damage).get_base(), (*tmp_character->damage).get_number(), (*tmp_character->damage).get_sides());
+	sprintf(character_info, "HP: %d  DAM: %s  SPD: %d", tmp_character->hp, dmg_die, tmp_character->speed);
+	mvprintw(22, 1, character_info);
+	
+	std::istringstream s(((npc *)tmp_character)->description);
+	while(getline(s, tmp_str, '\n')) {
+	  io_queue_message(tmp_str.c_str());
+	}
+	io_queue_message("");
+	io_print_message_queue(0, 0);
+	mvprintw(0, 0, "Select a monster. 't' to inspect; 'escape' to exit.");
+      }
+      break;
+    }
+    /* Only exit on escape key */
+  } while (c != 27);
+
+  io_display(d);
+  
+  return 0;
+}
+
+int32_t io_display_equipment(dungeon *d, bool selection, const char *prompt)
+{
+  uint32_t i, y;
+  uint8_t win_x = 10;
+  uint8_t win_width = DUNGEON_X - (win_x << 1);
+  uint8_t win_height = DUNGEON_Y - 1;
+  int c;
+  uint32_t index, equip_size;
+  
+  /* Create equipment window */
+  WINDOW *equip_win;
+  equip_win = newwin(win_height, win_width, 1, win_x);
+  keypad(equip_win, TRUE);
+  box(equip_win, 0, 0);
+
+  /* mvwprintw(WINDOW, y, x, Format, args) */
+  mvwprintw(equip_win, 0, 1, "%s", "Equipment");
+  
+  y = 1;
+  equip_size = d->PC->equipment.size();
+  if(equip_size == 0) {
+    mvwprintw(equip_win, y++, 1, "%s", "No Items Currently Equipped");
+  } else if(selection) {
+    mvwprintw(equip_win, y++, 1, "%s", prompt);
+  }
+  for(i = 0; i < equip_size; i++) {
+    /* Equipment slots lettered 'a' - 'l'. ASCII value of 'a' is 97. */
+    mvwprintw(equip_win, y, 1, "%c: %s", (i + 97), (*d->PC->equipment[i]).get_name());
+    y++;
+  }
+  if(selection && equip_size) {
+    mvwprintw(equip_win, ++y, 1, "%s", "Press s to select highlighted slot");
+  }
+  mvwprintw(equip_win, ++y, 1, "%s", "Press escape or F1 to close");
+  
+  /* Display the window */
+  wrefresh(equip_win);
+
+  index = 0;
+  if(selection && equip_size) {
+    equip_size--;  // Account for 0 indexing of vector
+    wattron(equip_win, A_BOLD);
+    mvwaddch(equip_win, (index + 2), 1, (index + 48));
+    wattroff(equip_win, A_BOLD);
+    do {
+      switch((c=wgetch(equip_win)))
+	{
+	case KEY_UP:
+	  if(index > 0) {
+	    mvwaddch(equip_win, (index + 2), 1, (index + 48));
+	    index--;
+	    wattron(equip_win, A_BOLD);
+	    mvwaddch(equip_win, (index + 2), 1, (index + 48));
+	    wattroff(equip_win, A_BOLD);
+	  }
+	  break;
+	case KEY_DOWN:
+	  if(index < equip_size) {
+	    mvwaddch(equip_win, (index + 2), 1, (index + 48));
+	    index++;
+	    wattron(equip_win, A_BOLD);
+	    mvwaddch(equip_win, (index + 2), 1, (index + 48));
+	    wattroff(equip_win, A_BOLD);
+	  }	  
+	  break;
+	}
+    } while (c != 's' && c != 27 && c != KEY_F(1));
+  }else {
+    do {
+      c = wgetch(equip_win);
+    } while (c != 27 && c != KEY_F(1));
+  }
+  
+  /* Clear the border then deallocate memory for equipment window */
+  wborder(equip_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+  wrefresh(equip_win);
+  delwin(equip_win);
+
+  io_display(d);
+
+  if (c == 's') {
+    return index;
+  }
+  
+  return -1;
+}
+
+uint32_t io_display_inventory(dungeon *d, bool selection, const char *prompt)
+{
+  uint32_t i, y;
+  uint8_t win_x = 10;
+  uint8_t win_width = DUNGEON_X - (win_x << 1);
+  uint8_t win_height = DUNGEON_Y - 1;
+  int c;
+  uint32_t index, invt_size;
+  
+  /* Create inventory window */
+  WINDOW *inventory_win;
+  inventory_win = newwin(win_height, win_width, 1, win_x);
+  keypad(inventory_win, TRUE);
+  box(inventory_win, 0, 0);
+
+  /* mvwprintw(WINDOW, y, x, Format, args) */
+  mvwprintw(inventory_win, 0, 1, "%s", "Inventory");
+  
+  y = 1;
+  invt_size = d->PC->inventory.size();
+  if(invt_size == 0) {
+    mvwprintw(inventory_win, y++, 1, "%s", "No Items In Pack");
+  } else if(selection) {
+    mvwprintw(inventory_win, y++, 1, "%s", prompt);
+  }
+  for(i = 0; i < invt_size; i++) {
+    /* Inventory slots numbered 0-9. */
+    mvwprintw(inventory_win, y, 1, "%d: %s", i, (*d->PC->inventory[i]).get_name());
+    y++;
+  }
+  if(selection && invt_size) {
+    mvwprintw(inventory_win, ++y, 1, "%s", "Press s to select highlighted slot");
+  }
+  mvwprintw(inventory_win, ++y, 1, "%s", "Press escape or F1 to close");
+  
+  /* Display the window */
+  wrefresh(inventory_win);
+
+  index = 0;
+  if(selection && invt_size) {
+    invt_size--;  // Account for 0 indexing of vector
+    wattron(inventory_win, A_BOLD);
+    mvwaddch(inventory_win, (index + 2), 1, (index + 48));
+    wattroff(inventory_win, A_BOLD);
+    do {
+      switch((c=wgetch(inventory_win)))
+	{
+	case KEY_UP:
+	  if(index > 0) {
+	    mvwaddch(inventory_win, (index + 2), 1, (index + 48));
+	    index--;
+	    wattron(inventory_win, A_BOLD);
+	    mvwaddch(inventory_win, (index + 2), 1, (index + 48));
+	    wattroff(inventory_win, A_BOLD);
+	  }
+	  break;
+	case KEY_DOWN:
+	  if(index < invt_size) {
+	    mvwaddch(inventory_win, (index + 2), 1, (index + 48));
+	    index++;
+	    wattron(inventory_win, A_BOLD);
+	    mvwaddch(inventory_win, (index + 2), 1, (index + 48));
+	    wattroff(inventory_win, A_BOLD);
+	  }
+	  break;
+	}
+    } while (c != 's' && c != 27 && c != KEY_F(1));
+  } else {
+    do {
+      c = wgetch(inventory_win);
+    } while (c != 27 && c != KEY_F(1));
+  }
+  
+  /* Clear the border then deallocate memory for inventory window */
+  wborder(inventory_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+  wrefresh(inventory_win);
+  delwin(inventory_win);
+
+  io_display(d);
+
+  if (c == 's') {
+    return index;
+  }
+  
+  return -1;
+}
+
 /* Adjectives to describe our monsters */
 static const char *adjectives[] = {
   "A menacing ",
@@ -872,7 +1212,12 @@ void io_handle_input(dungeon *d)
   struct timeval tv;
   uint32_t fog_off = 0;
   pair_t tmp = { DUNGEON_X, DUNGEON_Y };
-
+  object *tmp_obj;
+  char obj_info[70];
+  char dmg_die[10];
+  int32_t selection;
+  std::string tmp_str;
+  
   do {
     do{
       FD_ZERO(&readfs);
@@ -947,27 +1292,131 @@ void io_handle_input(dungeon *d)
       fail_code = 0;
       break;
     case 'T':
-      /* New command.  Display the distances for tunnelers.             */
+      /* Display the distances for tunnelers.                           */
       io_display_tunnel(d);
       fail_code = 1;
       break;
     case 'D':
-      /* New command.  Display the distances for non-tunnelers.         */
+      /* Display the distances for non-tunnelers.                       */
       io_display_distance(d);
       fail_code = 1;
       break;
     case 'H':
-      /* New command.  Display the hardnesses.                          */
+      /* Display the hardnesses.                                        */
       io_display_hardness(d);
       fail_code = 1;
       break;
     case 's':
-      /* New command.  Return to normal display after displaying some   *
-       * special screen.                                                */
+      /* Return to normal display after displaying some special screen. */
       io_display(d);
       fail_code = 1;
       break;
     case 'L':
+      /* Inspect monster                                                */
+      io_inspect_monster(d);
+      fail_code = 1;
+      break;
+    case ',':
+      /* TODO Pick up item                                                  */
+      tmp_obj = objpair(d->PC->position);
+      if(tmp_obj) {
+	if(d->PC->inventory.size() == 10) {
+	  io_queue_message("Inventory full!");
+	} else {
+	  if((*tmp_obj).get_next()) {  // Open item picker for stack
+	    // TODO
+	  } else {
+	    d->PC->inventory.push_back(tmp_obj);
+	    objpair(d->PC->position) = nullptr;
+	    io_queue_message("Picked up %s", (*tmp_obj).get_name());
+	  }
+	}
+	io_print_message_queue(0, 0);
+      }
+      fail_code = 1;
+      break;
+    case 'I':
+      /* Inspect item                                              */
+      if((selection =
+	  io_display_inventory(d, true, "Select Item To INSPECT:")) >= 0) {
+
+	tmp_obj = d->PC->inventory[selection];
+	/* Clear space for extra character info */
+	for(uint32_t y = 21; y < 24; y++) {
+	  for(uint32_t x = 1; x < DUNGEON_X; x++) {
+	    mvaddch(y, x, ' ');
+	  }
+	}
+	mvprintw(21, 1, (*tmp_obj).get_name());
+	mvprintw(22, 1, (*tmp_obj).get_type_name());	
+	sprintf(dmg_die, "%d+%dd%d", (*tmp_obj).get_damage_base(), (*tmp_obj).get_damage_number(), (*tmp_obj).get_damage_sides());
+	sprintf(obj_info, "HIT: %d  DAM: %s  DEF: %d  SPD: %d  DGE: %d  WGT: %d",
+		(*tmp_obj).get_hit(), dmg_die, (*tmp_obj).get_defence(), (*tmp_obj).get_speed(), (*tmp_obj).get_dodge(), (*tmp_obj).get_weight());
+	mvprintw(23, 1, obj_info);
+	
+	std::istringstream s((*tmp_obj).get_desc());
+	while(getline(s, tmp_str, '\n')) {
+	  io_queue_message(tmp_str.c_str());
+	}
+	io_queue_message("");
+	io_print_message_queue(0, 0);
+      }
+      fail_code = 1;
+      break;
+    case 'e':
+      /* List PC equipment                                              */
+      io_display_equipment(d, false, nullptr);
+      fail_code = 1;
+      break;
+    case 'i':
+      /* List PC inventory                                              */
+      io_display_inventory(d, false, nullptr);
+      fail_code = 1;
+      break;
+    case 'w':
+      /* TODO Wear item                                                 */
+      if((selection =
+	  io_display_inventory(d, true, "Select Item To WEAR:")) >= 0) {
+
+	tmp_obj = d->PC->inventory[selection];
+	
+      }
+      fail_code = 1;
+      break;
+    case 't':
+      /* TODO Take off item and place into inventory                    */
+      if((selection =
+	  io_display_inventory(d, true, "Select Item To TAKE OFF:")) >= 0) {
+
+	tmp_obj = d->PC->inventory[selection];
+	
+      }
+      fail_code = 1;
+      break;
+    case 'd':
+      /* Drop item onto the ground                                      */
+      if((selection =
+	  io_display_inventory(d, true, "Select Item To DROP:")) >= 0) {
+	  
+	tmp_obj = d->PC->inventory[selection];
+	if(objpair(d->PC->position)) {
+	  (*tmp_obj).set_next(objpair(d->PC->position));	  
+	}
+	objpair(d->PC->position) = tmp_obj;
+	d->PC->inventory.erase(d->PC->inventory.begin() + selection);
+	io_queue_message("Dropped %s", (*tmp_obj).get_name());
+	io_print_message_queue(0, 0);
+      }
+      fail_code = 1;
+      break;
+    case 'x':
+      /* TODO Destroy item                                              */
+      if((selection =
+	  io_display_inventory(d, true, "Select Item To DESTROY:")) >= 0) {
+
+	tmp_obj = d->PC->inventory[selection];
+	
+      }
       fail_code = 1;
       break;
     case 'g':

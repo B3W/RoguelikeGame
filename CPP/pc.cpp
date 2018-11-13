@@ -44,8 +44,12 @@ void config_pc(dungeon *d)
   d->PC->kills[kill_direct] = d->PC->kills[kill_avenged] = 0;
   d->PC->color.push_back(COLOR_WHITE);
   d->PC->damage = &pc_dice;
-  d->PC->name = "Isabella Garcia-Shapiro";
-
+  d->PC->hp = 300;
+  d->PC->name = "LEEROY JENKINS";
+  d->PC->inventory = std::vector<object *>(10);
+  d->PC->inventory.clear();
+  d->PC->equipment = std::vector<object *>(12);
+  d->PC->equipment.clear();
   d->character_map[character_get_y(d->PC)][character_get_x(d->PC)] = d->PC;
 
   dijkstra(d);
