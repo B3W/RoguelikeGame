@@ -166,3 +166,9 @@
 	Implemented picking up, dropping, listing, and inspecting objects
 	Implemented inspecting monsters
 
+11/13/2018 1:30 PM
+	Implemented equipping items
+	Made design change from a vector to an array for equipment storage
+   	  It makes more sense to have the same slot be used for the same item type consistently
+	  Easier to tell at a glance that an item is a weapon, armor, etc.
+
