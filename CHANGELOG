@@ -172,3 +172,9 @@
    	  It makes more sense to have the same slot be used for the same item type consistently
 	  Easier to tell at a glance that an item is a weapon, armor, etc.
 
+11/13/2018 4:00 PM
+	Implemented unequipping items
+	Implemented destroying items
+	  Removes from PC's inventory and destroys item
+	  Doesn't allow them to be generated again
+
