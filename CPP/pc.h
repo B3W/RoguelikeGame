@@ -1,6 +1,7 @@
 #ifndef PC_H
 # define PC_H
 
+# include <array>
 # include <vector>
 # include <stdint.h>
 
@@ -8,7 +9,22 @@
 # include "character.h"
 # include "dungeon.h"
 
+typedef enum equip_position {eqslot_INVALID,
+			     eqslot_WEAPON,
+			     eqslot_OFFHAND,
+			     eqslot_RANGED,
+			     eqslot_ARMOR,
+			     eqslot_HELMET,
+			     eqslot_CLOAK,
+			     eqslot_GLOVES,
+			     eqslot_BOOTS,
+			     eqslot_AMULET,
+			     eqslot_LIGHT,
+			     eqslot_RING
+}equip_position_t;
+
 class object;
+typedef enum object_type object_type_t;
 
 class pc : public character {
  public:
@@ -16,9 +32,10 @@ class pc : public character {
   terrain_type known_terrain[DUNGEON_Y][DUNGEON_X];
   uint8_t visible[DUNGEON_Y][DUNGEON_X];
   std::vector<object *> inventory;
-  std::vector<object *> equipment;
+  std::array<object *, 12> equipment;
 };
 
+equip_position_t get_epos(int32_t type);
 void pc_delete(pc *pc);
 uint32_t pc_is_alive(dungeon *d);
 void config_pc(dungeon *d);

@@ -710,7 +710,7 @@ uint32_t io_inspect_monster(dungeon *d)
   struct timeval tv;
   character *tmp_character;
   std::string tmp_str;
-  char character_info[80], dmg_die[10];
+  char character_info[80], dmg_die[20];
 
   pc_reset_visibility(d->PC);
   io_display_no_fog(d);
@@ -873,6 +873,7 @@ int32_t io_display_equipment(dungeon *d, bool selection, const char *prompt)
   uint8_t win_height = DUNGEON_Y - 1;
   int c;
   uint32_t index, equip_size;
+  bool equip_available = false;
   
   /* Create equipment window */
   WINDOW *equip_win;
@@ -885,17 +886,20 @@ int32_t io_display_equipment(dungeon *d, bool selection, const char *prompt)
   
   y = 1;
   equip_size = d->PC->equipment.size();
-  if(equip_size == 0) {
-    mvwprintw(equip_win, y++, 1, "%s", "No Items Currently Equipped");
-  } else if(selection) {
+  if(selection) {
     mvwprintw(equip_win, y++, 1, "%s", prompt);
   }
   for(i = 0; i < equip_size; i++) {
     /* Equipment slots lettered 'a' - 'l'. ASCII value of 'a' is 97. */
-    mvwprintw(equip_win, y, 1, "%c: %s", (i + 97), (*d->PC->equipment[i]).get_name());
+    if(d->PC->equipment[i]) {
+      mvwprintw(equip_win, y, 1, "%c: %s", (i + 97), (*d->PC->equipment[i]).get_name());
+      equip_available = true;
+    } else {
+      mvwprintw(equip_win, y, 1, "%c: ", (i + 97));
+    }
     y++;
   }
-  if(selection && equip_size) {
+  if(selection && equip_available) {
     mvwprintw(equip_win, ++y, 1, "%s", "Press s to select highlighted slot");
   }
   mvwprintw(equip_win, ++y, 1, "%s", "Press escape or F1 to close");
@@ -904,7 +908,7 @@ int32_t io_display_equipment(dungeon *d, bool selection, const char *prompt)
   wrefresh(equip_win);
 
   index = 0;
-  if(selection && equip_size) {
+  if(selection && equip_available) {
     equip_size--;  // Account for 0 indexing of vector
     wattron(equip_win, A_BOLD);
     mvwaddch(equip_win, (index + 2), 1, (index + 48));
@@ -1213,10 +1217,11 @@ void io_handle_input(dungeon *d)
   uint32_t fog_off = 0;
   pair_t tmp = { DUNGEON_X, DUNGEON_Y };
   object *tmp_obj;
-  char obj_info[70];
-  char dmg_die[10];
+  char obj_info[80];
+  char dmg_die[20];
   int32_t selection;
   std::string tmp_str;
+  equip_position_t e_pos;
   
   do {
     do{
@@ -1379,7 +1384,30 @@ void io_handle_input(dungeon *d)
 	  io_display_inventory(d, true, "Select Item To WEAR:")) >= 0) {
 
 	tmp_obj = d->PC->inventory[selection];
-	
+	/* Check if it is wearable */
+	if((e_pos = get_epos((*tmp_obj).get_type()))) {
+	  if(d->PC->equipment[e_pos-1]) {
+	    /* Check ring slots */
+	    if(e_pos == eqslot_RING) {
+	      if(d->PC->equipment[e_pos]) {
+		d->PC->inventory[selection] = d->PC->equipment[e_pos];
+	      } else {
+		d->PC->inventory.erase(d->PC->inventory.begin() + selection);
+	      }
+	      d->PC->equipment[e_pos] = tmp_obj;
+	    } else {
+	      d->PC->inventory[selection] = d->PC->equipment[e_pos-1];
+	      d->PC->equipment[e_pos-1] = tmp_obj;
+	    }
+	  } else {
+	    d->PC->inventory.erase(d->PC->inventory.begin() + selection);
+	    d->PC->equipment[e_pos-1] = tmp_obj;
+	  }
+	  io_queue_message("%s has been equipped", (*tmp_obj).get_name());
+	} else {
+	  io_queue_message("Cannot equip %s", (*tmp_obj).get_name());
+	}
+	io_print_message_queue(0, 0);
       }
       fail_code = 1;
       break;

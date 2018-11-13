@@ -10,6 +10,36 @@
 #include "io.h"
 #include "object.h"
 
+equip_position_t get_epos(int32_t type) {
+  switch(type)
+    {
+    case objtype_WEAPON:
+      return eqslot_WEAPON;
+    case objtype_OFFHAND:
+      return eqslot_OFFHAND;
+    case objtype_RANGED:
+      return eqslot_RANGED;
+    case objtype_ARMOR:
+      return eqslot_ARMOR;
+    case objtype_HELMET:
+      return eqslot_HELMET;
+    case objtype_CLOAK:
+      return eqslot_CLOAK;
+    case objtype_GLOVES:
+      return eqslot_GLOVES;
+    case objtype_BOOTS:
+      return eqslot_BOOTS;
+    case objtype_AMULET:
+      return eqslot_AMULET;
+    case objtype_LIGHT:
+      return eqslot_LIGHT;
+    case objtype_RING:
+      return eqslot_RING;
+    default:
+      return eqslot_INVALID;    
+    }
+}
+
 uint32_t pc_is_alive(dungeon *d)
 {
   return d->PC->alive;
@@ -48,8 +78,7 @@ void config_pc(dungeon *d)
   d->PC->name = "LEEROY JENKINS";
   d->PC->inventory = std::vector<object *>(10);
   d->PC->inventory.clear();
-  d->PC->equipment = std::vector<object *>(12);
-  d->PC->equipment.clear();
+  d->PC->equipment = std::array<object *, 12>();
   d->character_map[character_get_y(d->PC)][character_get_x(d->PC)] = d->PC;
 
   dijkstra(d);
