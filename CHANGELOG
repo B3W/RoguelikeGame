@@ -181,3 +181,13 @@
 11/13/2018 9:00 PM
 	Implemented an item stack menu for searching through item stacks to pick out certain item
 
+11/14/2018 3:00 AM
+	Updated combat system to incorporate equipment
+	  NPCs no longer attack each other
+	  Attacks initiated by an attempt from PC to move into space with NPC or vice versa
+	  All attacks hit
+	  Damage calculated by collective damage rolls from all equipment PC is wearing
+	  Once a character's hitpoints drops below 0 that character dies
+	  If the boss of the dungeon is killed then the PC wins
+	Equipped items can now affect the speed of the PC
+
