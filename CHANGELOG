@@ -191,3 +191,8 @@
 	  If the boss of the dungeon is killed then the PC wins
 	Equipped items can now affect the speed of the PC
 
+11/14/2018 11:30 AM
+	Fixed subtle bug of NPCs moving into each other when being displaced by another NPC
+	Fixed bug where damage is way higher than it should be
+	Added extra text once the boss is defeated
+
