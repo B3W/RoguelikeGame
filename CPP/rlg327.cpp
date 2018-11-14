@@ -64,7 +64,18 @@ const char *tombstone =
   "..\"\"\"\"\"....\"\"\"\"\"..\"\"...\"\"\".\n\n"
   "            You're dead.  Better luck in the next life.\n\n\n";
 
-const char *quitter = "QUITTER!!\n\n";
+const char *quitter =
+  "\n                                                           \n"
+  "                  _____                                      \n"
+  "                 /..   \\_                                   \n"
+  "               _/   . .  \\                                  \n"
+  "              /   ..      \\_                                \n"
+  "             | . .      . .  |                               \n"
+  "            _|      ..      _\\                              \n"
+  "           /_|             /_/_\\                            \n"
+  "          _|_/            /_|/__\\                           \n"
+  "  Stepping out from the dungeon entrance the\n"
+  "  shrieks of maniacal beasts fade behind you\n";
 
 void usage(char *name)
 {
@@ -271,10 +282,8 @@ int main(int argc, char *argv[])
   }
   
   printf("%s", ending_message);
-  printf("You defended your life in the face of %u deadly beasts.\n"
-         "You avenged the cruel and untimely murders of %u "
-         "peaceful dungeon residents.\n",
-         d.PC->kills[kill_direct], d.PC->kills[kill_avenged]);
+  printf("You defended your life in the face of %u deadly beasts.\n",
+	 d.PC->kills[kill_direct]);
 
   delete_pc_inventory(&d);
   delete_pc_equipment(&d);
