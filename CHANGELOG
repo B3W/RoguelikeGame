@@ -178,3 +178,6 @@
 	  Removes from PC's inventory and destroys item
 	  Doesn't allow them to be generated again
 
+11/13/2018 9:00 PM
+	Implemented an item stack menu for searching through item stacks to pick out certain item
+
