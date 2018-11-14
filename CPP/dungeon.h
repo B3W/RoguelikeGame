@@ -82,6 +82,7 @@ class dungeon {
   object *objmap[DUNGEON_Y][DUNGEON_X];
   pc *PC;
   heap_t events;
+  uint32_t boss_alive;
   uint16_t num_monsters;
   uint16_t max_monsters;
   uint16_t num_objects;

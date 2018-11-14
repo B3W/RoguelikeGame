@@ -9,19 +9,21 @@
 # include "character.h"
 # include "dungeon.h"
 
-typedef enum equip_position {eqslot_INVALID,
-			     eqslot_WEAPON,
-			     eqslot_OFFHAND,
-			     eqslot_RANGED,
-			     eqslot_ARMOR,
-			     eqslot_HELMET,
-			     eqslot_CLOAK,
-			     eqslot_GLOVES,
-			     eqslot_BOOTS,
-			     eqslot_AMULET,
-			     eqslot_LIGHT,
-			     eqslot_RING
-}equip_position_t;
+typedef enum equip_position
+  {
+   eqslot_INVALID,
+   eqslot_WEAPON,
+   eqslot_OFFHAND,
+   eqslot_RANGED,
+   eqslot_ARMOR,
+   eqslot_HELMET,
+   eqslot_CLOAK,
+   eqslot_GLOVES,
+   eqslot_BOOTS,
+   eqslot_AMULET,
+   eqslot_LIGHT,
+   eqslot_RING
+  }equip_position_t;
 
 class object;
 typedef enum object_type object_type_t;

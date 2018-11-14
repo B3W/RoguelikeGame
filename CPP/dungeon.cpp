@@ -621,6 +621,7 @@ void init_dungeon(dungeon *d)
   heap_init(&d->events, compare_events, event_delete);
   memset(d->character_map, 0, sizeof (d->character_map));
   memset(d->objmap, 0, sizeof (d->objmap));
+  d->boss_alive = 1;
 }
 
 int write_dungeon_map(dungeon *d, FILE *f)

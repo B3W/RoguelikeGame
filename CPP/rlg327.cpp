@@ -64,6 +64,8 @@ const char *tombstone =
   "..\"\"\"\"\"....\"\"\"\"\"..\"\"...\"\"\".\n\n"
   "            You're dead.  Better luck in the next life.\n\n\n";
 
+const char *quitter = "QUITTER!!\n\n";
+
 void usage(char *name)
 {
   fprintf(stderr,
@@ -86,6 +88,7 @@ int main(int argc, char *argv[])
   char *save_file;
   char *load_file;
   char *pgm_file;
+  const char *ending_message;
 
   /* Default behavior: Seed with the time, generate a new dungeon, *
    * and don't write to disk.                                      */
@@ -228,7 +231,7 @@ int main(int argc, char *argv[])
   if (!do_load && !do_image) {
     io_queue_message("Seed is %u.", seed);
   }
-  while (pc_is_alive(&d) && dungeon_has_npcs(&d) && !d.quit) {
+  while (pc_is_alive(&d) && d.boss_alive && !d.quit) {
     do_moves(&d);
   }
   io_display(&d);
@@ -259,7 +262,15 @@ int main(int argc, char *argv[])
     }
   }
 
-  printf("%s", pc_is_alive(&d) ? victory : tombstone);
+  if(!(pc_is_alive(&d))) {
+    ending_message = tombstone;
+  } else if(!(d.boss_alive)) {
+    ending_message = victory;
+  } else {
+    ending_message = quitter;
+  }
+  
+  printf("%s", ending_message);
   printf("You defended your life in the face of %u deadly beasts.\n"
          "You avenged the cruel and untimely murders of %u "
          "peaceful dungeon residents.\n",

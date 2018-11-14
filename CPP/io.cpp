@@ -420,7 +420,8 @@ void io_display(dungeon *d)
     mvprintw(22, 55, "NONE.");
     attroff(COLOR_PAIR(COLOR_BLUE));
   }
-
+  mvprintw(21, 1, "HP: %d", d->PC->hp);
+  
   io_print_message_queue(0, 0);
 
   refresh();
@@ -1412,14 +1413,14 @@ void io_handle_input(dungeon *d)
       fail_code = 1;
       break;
     case ',':
-      /* TODO Pick up item                                              */
+      /* Pick up item                                                   */
       tmp_obj = objpair(d->PC->position);
       if(tmp_obj) {
 	if(d->PC->inventory.size() == 10) {
 	  io_queue_message("Inventory full!");
 	} else {
-	  if((*tmp_obj).get_next()) {  // Open item picker for stack
-	    //////////// TODO //////////////
+	  /* Open Item Stack viewer if necessary */
+	  if((*tmp_obj).get_next()) {
 	    if((tmp_obj = io_display_stack(d, tmp_obj))) {
 	      d->PC->inventory.push_back(tmp_obj);
 	      io_queue_message("Picked up %s", (*tmp_obj).get_name());
@@ -1499,6 +1500,7 @@ void io_handle_input(dungeon *d)
 	    d->PC->inventory.erase(d->PC->inventory.begin() + selection);
 	    d->PC->equipment[e_pos-1] = tmp_obj;
 	  }
+	  d->PC->speed += (*tmp_obj).get_speed();
 	  io_queue_message("%s has been equipped", (*tmp_obj).get_name());
 	} else {
 	  io_queue_message("Cannot equip %s", (*tmp_obj).get_name());
@@ -1525,6 +1527,7 @@ void io_handle_input(dungeon *d)
 	  d->PC->inventory.push_back(tmp_obj);
 	  io_queue_message("%s unequipped", (*tmp_obj).get_name());
 	}
+	d->PC->speed -= (*tmp_obj).get_speed();
 	io_print_message_queue(0, 0);
       }
       fail_code = 1;
