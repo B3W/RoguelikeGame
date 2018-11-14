@@ -52,7 +52,7 @@ void do_combat(dungeon *d, character *atk, character *def)
     "brain",                   /* 29 */
   };
   int part;
-  int32_t dmg;
+  int32_t dmg = 0;
 
   if(atk == d->PC) {
     /* If no weapon roll for fist damage */
@@ -78,6 +78,9 @@ void do_combat(dungeon *d, character *atk, character *def)
       /* Check if Boss */
       if(has_characteristic(def, BOSS)) {
 	d->boss_alive = 0;
+	io_queue_message("As you land the final blow, %s falls to their knees.", def->name);
+	io_queue_message("The light fades from their eyes and an eerie hush falls over the dungeon...", def->name);
+	io_queue_message("");
       }
     } else {
       io_queue_message("You deal %d damage to %s%s", dmg, is_unique(def) ? "" : "the ", def->name);
@@ -141,7 +144,7 @@ void move_character(dungeon *d, character *c, pair_t next)
       for(uint32_t cnt = 0; cnt < 8; cnt++) {
 	dest[dim_x] = next[dim_x] + moveset[move][0];
 	dest[dim_y] = next[dim_y] + moveset[move][1];
-	if(((charpair(dest) == c) || (mappair(dest) >= ter_floor)) && charpair(dest) != d->PC) {
+	if((charpair(dest) == c) || ((mappair(dest) >= ter_floor) && !charpair(dest))) {
 	  charpair(c->position) = nullptr;
 	  
 	  charpair(next)->position[dim_x] = dest[dim_x];
