@@ -82,6 +82,11 @@ char object::get_symbol()
   return next ? '&' : object_symbol[type];
 }
 
+char object::get_raw_symbol()
+{
+  return object_symbol[type];
+}
+
 uint32_t object::get_color()
 {
   return color;

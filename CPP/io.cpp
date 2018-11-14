@@ -917,6 +917,7 @@ int32_t io_display_equipment(dungeon *d, bool selection, const char *prompt)
       switch((c=wgetch(equip_win)))
 	{
 	case KEY_UP:
+	case 'k':
 	  if(index > 0) {
 	    mvwaddch(equip_win, (index + 2), 1, (index + 97));
 	    index--;
@@ -926,6 +927,7 @@ int32_t io_display_equipment(dungeon *d, bool selection, const char *prompt)
 	  }
 	  break;
 	case KEY_DOWN:
+	case 'j':
 	  if(index < equip_size) {
 	    mvwaddch(equip_win, (index + 2), 1, (index + 97));
 	    index++;
@@ -1004,6 +1006,7 @@ uint32_t io_display_inventory(dungeon *d, bool selection, const char *prompt)
       switch((c=wgetch(inventory_win)))
 	{
 	case KEY_UP:
+	case 'k':
 	  if(index > 0) {
 	    mvwaddch(inventory_win, (index + 2), 1, (index + 48));
 	    index--;
@@ -1013,6 +1016,7 @@ uint32_t io_display_inventory(dungeon *d, bool selection, const char *prompt)
 	  }
 	  break;
 	case KEY_DOWN:
+	case 'j':
 	  if(index < invt_size) {
 	    mvwaddch(inventory_win, (index + 2), 1, (index + 48));
 	    index++;
@@ -1041,6 +1045,92 @@ uint32_t io_display_inventory(dungeon *d, bool selection, const char *prompt)
   }
   
   return -1;
+}
+
+object *io_display_stack(dungeon *d, object *top)
+{
+  uint32_t i, y, index;
+  uint8_t win_x = 10;
+  uint8_t win_width = DUNGEON_X - (win_x << 1);
+  uint8_t win_height = DUNGEON_Y - 1;
+  int c;
+  object *tmp_obj;
+  std::vector<object *> stack = std::vector<object *>(16);
+
+  /* Populate stack */
+  stack.clear();
+  while(top && (stack.size() < 16)) {
+    stack.push_back(top);
+    top = (*top).get_next();
+  }
+  
+  /* Create inventory window */
+  WINDOW *stack_win;
+  stack_win = newwin(win_height, win_width, 1, win_x);
+  keypad(stack_win, TRUE);
+  box(stack_win, 0, 0);
+
+  /* mvwprintw(WINDOW, y, x, Format, args) */
+  mvwprintw(stack_win, 0, 1, "%s", "Item Stack");
+
+  y = 1;
+  mvwprintw(stack_win, y++, 1, "%s", "Select Item From Stack To Pickup:");
+  for(i = 0; i < stack.size(); i++) {
+    tmp_obj = stack[i];
+    mvwaddch(stack_win, y, 1, (*tmp_obj).get_raw_symbol());
+    mvwprintw(stack_win, y++, 2, ": %s", (*tmp_obj).get_name());
+  }
+  mvwprintw(stack_win, ++y, 1, "%s", "Press s to select highlighted slot");
+  mvwprintw(stack_win, ++y, 1, "%s", "Press escape or F1 to close");
+  
+  index = 0;
+  wattron(stack_win, A_BOLD);
+  mvwaddch(stack_win, (index + 2), 1, (*stack[index]).get_raw_symbol());
+  wattroff(stack_win, A_BOLD);
+  do {
+    switch((c=wgetch(stack_win)))
+      {
+      case KEY_UP:
+      case 'k':
+	if(index > 0) {
+	  mvwaddch(stack_win, (index + 2), 1, (*stack[index]).get_raw_symbol());
+	  index--;
+	  wattron(stack_win, A_BOLD);
+	  mvwaddch(stack_win, (index + 2), 1, (*stack[index]).get_raw_symbol());
+	  wattroff(stack_win, A_BOLD);
+	}
+	break;
+      case KEY_DOWN:
+      case 'j':
+	if(index < (stack.size()-1)) {
+	  mvwaddch(stack_win, (index + 2), 1, (*stack[index]).get_raw_symbol());
+	  index++;
+	  wattron(stack_win, A_BOLD);
+	  mvwaddch(stack_win, (index + 2), 1, (*stack[index]).get_raw_symbol());
+	  wattroff(stack_win, A_BOLD);
+	}
+	break;
+      }
+  } while (c != 's' && c != 27 && c != KEY_F(1));
+  
+  /* Clear the border then deallocate memory for inventory window */
+  wborder(stack_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+  wrefresh(stack_win);
+  delwin(stack_win);
+
+  io_display(d);
+
+  if (c == 's') {
+    if(index > 0) {
+      (*stack[index-1]).set_next(stack[index+1]);
+    } else {
+      objpair(d->PC->position) = (*stack[index]).get_next();
+    }
+    (*stack[index]).set_next(nullptr);
+    return stack[index];
+  }
+
+  return nullptr;
 }
 
 /* Adjectives to describe our monsters */
@@ -1329,7 +1419,11 @@ void io_handle_input(dungeon *d)
 	  io_queue_message("Inventory full!");
 	} else {
 	  if((*tmp_obj).get_next()) {  // Open item picker for stack
-	    // TODO
+	    //////////// TODO //////////////
+	    if((tmp_obj = io_display_stack(d, tmp_obj))) {
+	      d->PC->inventory.push_back(tmp_obj);
+	      io_queue_message("Picked up %s", (*tmp_obj).get_name());
+	    }
 	  } else {
 	    d->PC->inventory.push_back(tmp_obj);
 	    objpair(d->PC->position) = nullptr;

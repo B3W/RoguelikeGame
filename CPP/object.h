@@ -34,6 +34,7 @@ class object {
     return damage.get_sides();
   }
   char get_symbol();
+  char get_raw_symbol();
   uint32_t get_color();
   const char *get_name();
   const char *get_desc();
