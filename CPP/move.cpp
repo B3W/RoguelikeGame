@@ -78,8 +78,9 @@ void do_combat(dungeon *d, character *atk, character *def)
       /* Check if Boss */
       if(has_characteristic(def, BOSS)) {
 	d->boss_alive = 0;
-	io_queue_message("As you land the final blow, %s falls to their knees.", def->name);
-	io_queue_message("The light fades from their eyes and an eerie hush falls over the dungeon...", def->name);
+	io_queue_message("As you land the final blow, %s falls to", def->name);
+	io_queue_message("their knees. The light begins to fade from their eyes");
+	io_queue_message("and an eerie hush falls over the dungeon...");
 	io_queue_message("");
       }
     } else {

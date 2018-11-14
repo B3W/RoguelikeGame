@@ -420,7 +420,7 @@ void io_display(dungeon *d)
     mvprintw(22, 55, "NONE.");
     attroff(COLOR_PAIR(COLOR_BLUE));
   }
-  mvprintw(21, 1, "HP: %d", d->PC->hp);
+  mvprintw(21, 1, "HP: %d  SPD: %d", d->PC->hp, d->PC->speed);
   
   io_print_message_queue(0, 0);
 
