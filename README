@@ -1,4 +1,7 @@
-Rougelike Dungeon with Custom Monsters and Objects
+Rougelike Dungeon with Equipment and Updated Combat Mechanics
+  CPP implementation contains all latest features
+  C   implementation has not been updated for a while
+  
   The purpose of this program is to procedurally generate randomized dungeon
   levels. This dungeon contains rooms, corridors, and monsters. Monsters have
   attributes that consist of intelligence, telepathy, tunneling, erratic, unique,
@@ -8,9 +11,11 @@ Rougelike Dungeon with Custom Monsters and Objects
   unique monsters can only have one instance present in the dungeon level at a
   time and if killed cannot be respawned for the remaining duration of the game.
   Monsters can have none, all, or some combination of these attributes. Monsters
-  now also have hitpoints and damage. The dungeon now contains an assortment of
-  objects. The types of objects vary and include, armor, weapons, and scrolls. The
-  player can progress through levels via the stairs located within the dungeon.
+  now also have hitpoints and damage. The dungeon contains an assortment of
+  objects. The types of objects vary and include, armor, weapons, and scrolls.
+  Players now have an inventory and equipment slots. Objects can also be destroyed
+  and removed from the game. The player can progress through levels via the stairs
+  located within the dungeon. To win you must defeat the boss!
 
   Additional Features of the program:
     - Pathing via Dijkstra's Algorithm for intelligent creatures to find the player character
@@ -38,6 +43,14 @@ Rougelike Dungeon with Custom Monsters and Objects
     Q - Quit the game 
 
   Additional Key Mappings in CPP version:
+    , - Pick up an item
+    w - Equip item
+    t - Unequip item
+    x - Destroy item and remove from current game
+    I - Inspect item
+    i - List inventory
+    e - List equipment
+    L - Inspect monster
     T - Display the tunneling distance map
     D - Display the non-tunneling distance map
     H - display hardness map
@@ -76,17 +89,13 @@ Rougelike Dungeon with Custom Monsters and Objects
       '/' - Ammunition
       ',' - Food
       '%' - Container
+      '&' - Stack of items
 
 Implementation
   This implementation succeeds in meeting all of the required specifications.
-  An object class was added to contain object instance data and a map of
-  pointers to objects was added to keep track of objects within the dungeon.
-  descriptions.cpp is now a factory with methods 'generate_monster' and
-  'generate_object' for generating instances of monsters and objects from
-  monster and object descriptions. Fields were added to the character and
-  npc classes to accomadate extra data from the monster descriptions. All
-  objects and monsters are displayed with color in the dungeon. If a monster
-  has more the one color only the first color in the vector is displayed.
+  Item interations are now possible as well as monster inspection. The combat
+  system was updated. Weapons now have damage and attacks subtract from the
+  character's hitpoints until they die.  
 
 NOTE
   If using PuTTY, navigate to Connection -> Data and make sure 'Terminal-type
@@ -96,4 +105,4 @@ Author
   Weston Berg (weberg@iastate.edu)
 
 Date
-  November 7th, 2018
+  November 14th, 2018
